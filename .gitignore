@@ -30,3 +30,8 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Codex
+.codex/auth.json
+.codex/config.toml
+
