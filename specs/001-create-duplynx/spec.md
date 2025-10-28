@@ -5,6 +5,12 @@
 **Status**: Draft  
 **Input**: User description: "/prompts:speckit.specify Develop DupLynx, a distributed duplicate file detector platform. It should allow users to scan filesystems on multiple machines, upload checksums, and other file metadata to a central server, identify duplicate files across machines based on cryptographic hashes, and manage them by deleting copies, creating hardlinks, or quarantining. The system must be multi-tenant, supporting multiple isolated tenants (e.g., organizations or teams) where each tenant has segregated data, machines, scans, and access controls to ensure privacy and scalability across shared infrastructure. In this initial phase for this feature, let's call it "Create DupLynx," let's have multiple machines but the machines will be declared ahead of time, predefined per tenant. I want five machines in two different categories, one personal laptop and four server instances, assigned to a sample tenant. Let's create three different sample scans. Let's have the standard duplicate management views for the status of each group, such as "Review," "Action Needed," "Resolved," and "Archived." There will be no login for this application as this is just the very first testing thing to ensure that our basic features are set up. The system must have a web dashboard as the primary interface for all interactions. You should be able to, from that group card, assign one of the valid machines as the "keeper" for the master copy. When you first launch DupLynx, it's going to give you a list of the sample tenants to pick from, followed by a list of the five machines within the selected tenant to pick from. There will be no password required. When you click on a machine, you go into the main view, which displays the list of scans for that tenant. When you click on a scan, you open the management board for that scan in the web dashboard."
 
+## Clarifications
+
+### Session 2025-10-27
+
+- Q: Should duplicate actions automatically advance a group's status or stay manual? → A: Status changes remain manual; actions do not auto-advance lanes.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Tenant & Machine Onboarding Flow (Priority: P1)
@@ -110,9 +116,10 @@ Platform admins must ensure each tenant’s data, machines, scans, and duplicate
 - **FR-005**: Management board MUST organize duplicate groups into the statuses “Review,” “Action Needed,” “Resolved,” and “Archived” with counts per lane.
 - **FR-006**: Duplicate group cards MUST allow assigning any machine from the tenant’s roster as the keeper for the master copy with audit trail.
 - **FR-007**: Duplicate group cards MUST expose actions to delete redundant files, create hardlinks back to the keeper copy, and quarantine suspicious files; initial implementation MAY stub side effects but MUST persist intended state.
-- **FR-008**: All data access APIs MUST enforce tenant scoping, preventing machines, scans, or duplicate groups from leaking across tenants.
-- **FR-009**: Web dashboard MUST surface current tenant context and machine selection in the global header for clarity.
-- **FR-010**: System MUST log key user actions (tenant selection, machine selection, keeper assignment, duplicate actions) for future monitoring hooks.
+- **FR-008**: Duplicate group actions MUST NOT automatically change the group’s status; stewards manually move groups between lanes after reviewing outcomes.
+- **FR-009**: All data access APIs MUST enforce tenant scoping, preventing machines, scans, or duplicate groups from leaking across tenants.
+- **FR-010**: Web dashboard MUST surface current tenant context and machine selection in the global header for clarity.
+- **FR-011**: System MUST log key user actions (tenant selection, machine selection, keeper assignment, duplicate actions) for future monitoring hooks.
 
 ### Key Entities *(include if feature involves data)*
 
