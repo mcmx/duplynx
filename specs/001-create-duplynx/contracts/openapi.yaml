@@ -1,0 +1,460 @@
+openapi: 3.1.0
+info:
+  title: DupLynx Demo API
+  version: 0.1.0
+  description: >
+    HTTP contract for the Create DupLynx phase. Endpoints expose tenant-scoped
+    metadata for seeded scans, duplicate groups, and action workflows consumed
+    by templ + htmx dashboards.
+servers:
+  - url: https://demo.duplynx.local
+    description: Demo environment (Phase 0)
+  - url: http://localhost:8080
+    description: Local development server
+tags:
+  - name: Tenants
+  - name: Machines
+  - name: Scans
+  - name: DuplicateGroups
+  - name: Actions
+paths:
+  /tenants:
+    get:
+      tags: [Tenants]
+      summary: List available tenants
+      operationId: listTenants
+      responses:
+        '200':
+          description: Tenant summaries for launch screen
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TenantSummary'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /tenants/{tenantSlug}/machines:
+    parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+    get:
+      tags: [Machines]
+      summary: List machines for a tenant
+      operationId: listMachines
+      responses:
+        '200':
+          description: Machines with category metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  machines:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Machine'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /tenants/{tenantSlug}/machines/{machineId}/scans:
+    parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/MachineId'
+    get:
+      tags: [Scans]
+      summary: List scans accessible to the tenant
+      operationId: listScans
+      responses:
+        '200':
+          description: Scan catalog for dashboard entry
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ScanSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /tenants/{tenantSlug}/scans/{scanId}:
+    parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/ScanId'
+    get:
+      tags: [Scans]
+      summary: Retrieve scan detail with duplicate group counts
+      operationId: getScan
+      responses:
+        '200':
+          description: Scan metadata and status counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /tenants/{tenantSlug}/scans/{scanId}/duplicate-groups:
+    parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/ScanId'
+      - name: status
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/DuplicateStatus'
+        description: Optional filter to fetch a specific status lane
+    get:
+      tags: [DuplicateGroups]
+      summary: List duplicate groups for a scan
+      operationId: listDuplicateGroups
+      responses:
+        '200':
+          description: Duplicate groups enriched with file counts and keeper info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  duplicateGroups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DuplicateGroup'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /tenants/{tenantSlug}/duplicate-groups/{groupId}:
+    parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/GroupId'
+    get:
+      tags: [DuplicateGroups]
+      summary: Fetch a duplicate group with file instances
+      operationId: getDuplicateGroup
+      responses:
+        '200':
+          description: Duplicate group detail and files
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateGroupDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /tenants/{tenantSlug}/duplicate-groups/{groupId}/keeper:
+    parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/GroupId'
+    post:
+      tags: [Actions]
+      summary: Assign or change the keeper machine for a duplicate group
+      operationId: assignKeeper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [keeperMachineId]
+              properties:
+                keeperMachineId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Keeper assignment acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionAcknowledgement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /tenants/{tenantSlug}/duplicate-groups/{groupId}/actions:
+    parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/GroupId'
+    post:
+      tags: [Actions]
+      summary: Trigger deduplication actions for a group
+      operationId: triggerAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [actionType]
+              properties:
+                actionType:
+                  $ref: '#/components/schemas/ActionType'
+                targetFileIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                notes:
+                  type: string
+                  maxLength: 512
+      responses:
+        '202':
+          description: Action accepted and queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionAcknowledgement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+components:
+  parameters:
+    TenantSlug:
+      name: tenantSlug
+      in: path
+      required: true
+      schema:
+        type: string
+      description: URL-safe tenant slug
+    MachineId:
+      name: machineId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ScanId:
+      name: scanId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    NotFound:
+      description: Entity not found in tenant scope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Request validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnexpectedError:
+      description: Unhandled server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    TenantSummary:
+      type: object
+      required: [id, slug, name, description]
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        statistics:
+          type: object
+          properties:
+            machineCount:
+              type: integer
+            scanCount:
+              type: integer
+    Machine:
+      type: object
+      required: [id, name, category]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+          enum: [personal_laptop, server]
+        hostname:
+          type: string
+        role:
+          type: string
+        lastScanAt:
+          type: string
+          format: date-time
+    ScanSummary:
+      type: object
+      required: [id, name, startedAt, duplicateGroupCount, statusCounts]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        initiatedMachineId:
+          type: string
+          format: uuid
+        duplicateGroupCount:
+          type: integer
+        statusCounts:
+          type: object
+          properties:
+            review:
+              type: integer
+            actionNeeded:
+              type: integer
+            resolved:
+              type: integer
+            archived:
+              type: integer
+    ScanDetail:
+      allOf:
+        - $ref: '#/components/schemas/ScanSummary'
+        - type: object
+          properties:
+            description:
+              type: string
+    DuplicateStatus:
+      type: string
+      enum: [review, action_needed, resolved, archived]
+    DuplicateGroup:
+      type: object
+      required: [id, hash, status, fileCount, totalSizeBytes]
+      properties:
+        id:
+          type: string
+          format: uuid
+        hash:
+          type: string
+        status:
+          $ref: '#/components/schemas/DuplicateStatus'
+        fileCount:
+          type: integer
+        totalSizeBytes:
+          type: integer
+          format: int64
+        keeperMachineId:
+          type: string
+          format: uuid
+          nullable: true
+        previewFiles:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/FileInstance'
+    DuplicateGroupDetail:
+      allOf:
+        - $ref: '#/components/schemas/DuplicateGroup'
+        - type: object
+          properties:
+            files:
+              type: array
+              items:
+                $ref: '#/components/schemas/FileInstance'
+            recentActions:
+              type: array
+              items:
+                $ref: '#/components/schemas/ActionAudit'
+    FileInstance:
+      type: object
+      required: [id, machineId, path, sizeBytes, checksum, lastSeenAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        machineId:
+          type: string
+          format: uuid
+        path:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+        checksum:
+          type: string
+        lastSeenAt:
+          type: string
+          format: date-time
+        quarantined:
+          type: boolean
+    ActionType:
+      type: string
+      enum: [delete_copies, create_hardlinks, quarantine, retry, note]
+    ActionAcknowledgement:
+      type: object
+      required: [status, duplicateGroupId, message]
+      properties:
+        status:
+          type: string
+          enum: [accepted, completed]
+        duplicateGroupId:
+          type: string
+          format: uuid
+        message:
+          type: string
+        auditId:
+          type: string
+          format: uuid
+    ActionAudit:
+      type: object
+      required: [id, actionType, performedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        actionType:
+          $ref: '#/components/schemas/ActionType'
+        performedAt:
+          type: string
+          format: date-time
+        actor:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
