@@ -120,6 +120,8 @@ Platform admins must ensure each tenant’s data, machines, scans, and duplicate
 - **FR-009**: All data access APIs MUST enforce tenant scoping, preventing machines, scans, or duplicate groups from leaking across tenants.
 - **FR-010**: Web dashboard MUST surface current tenant context and machine selection in the global header for clarity.
 - **FR-011**: System MUST log key user actions (tenant selection, machine selection, keeper assignment, duplicate actions) for future monitoring hooks.
+- **FR-012**: Server MUST expose ingestion endpoints that accept signed scan result payloads from client agents that only perform filesystem scanning and data upload.
+- **FR-013**: Server deployment MUST support separate stateless instances for ingestion API traffic and dashboard GUI traffic sharing the same SQLite/Ent data store.
 
 ### Key Entities *(include if feature involves data)*
 

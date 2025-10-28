@@ -34,3 +34,10 @@
 - **Alternatives considered**:
   - *Full job queue (e.g., Redis-based)*: Adds infrastructure without real remote agents in this phase.
   - *Direct handler mutations without dispatcher*: Harder to add instrumentation and future async execution modes.
+
+## Decision 6: Stateless ingestion API with client-driven scan uploads
+- **Decision**: Run ingestion as part of the Go server’s API layer so headless scanner agents POST scan manifests over HTTPS to `/ingest` endpoints; server instances remain stateless, sharing a SQLite file on local disk per deployment pod, while multiple GUI pods reuse the same codebase running in dashboard mode.
+- **Rationale**: Aligns with requirement that clients only scan and send results; consolidates code paths and allows horizontal scaling by running identical binaries in ingestion or dashboard roles behind load balancers.
+- **Alternatives considered**:
+  - *Separate microservice for ingestion*: Adds deployment overhead without extra capabilities for Phase 0.
+  - *Client-side direct database writes*: Violates security boundaries and complicates tenancy enforcement.
