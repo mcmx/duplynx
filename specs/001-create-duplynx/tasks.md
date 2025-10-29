@@ -51,24 +51,24 @@
 
 ### Tests
 
-- [ ] T023 [P] [US1] Write contract tests for `/tenants` and `/tenants/{tenantSlug}/machines` in `tests/contract/tenants_machines_test.go`
-- [ ] T024 [P] [US1] Create Playwright flow verifying three-click onboarding and header breadcrumb in `tests/e2e/onboarding.spec.ts`
-- [ ] T025 [P] [US1] Add integration test for tenant machine filtering logic in `tests/integration/tenancy_flow_test.go`
+- [X] T023 [P] [US1] Write contract tests for `/tenants` and `/tenants/{tenantSlug}/machines` in `tests/contract/tenants_machines_test.go`
+- [X] T024 [P] [US1] Create Playwright flow verifying three-click onboarding and header breadcrumb in `tests/e2e/onboarding.spec.ts`
+- [X] T025 [P] [US1] Add integration test for tenant machine filtering logic in `tests/integration/tenancy_flow_test.go`
 
 ### Implementation
 
-- [ ] T026 [US1] Implement tenancy repository with scoped queries in `backend/internal/tenancy/repository.go`
-- [ ] T027 [US1] Implement `/tenants` list handler in `backend/internal/http/handlers/tenants.go`
-- [ ] T028 [US1] Implement tenant machine list handler in `backend/internal/http/handlers/machines.go`
-- [ ] T029 [US1] Build launch and machine picker templ views in `backend/internal/templ/launch.templ`
-- [ ] T030 [US1] Render header breadcrumb for tenant/machine in `backend/internal/templ/layout.templ`
-- [ ] T031 [US1] Wire tenant/machine routes and context injection in `backend/internal/http/router.go`
-- [ ] T032 [US1] Seed sample tenant and machine records for demo in `backend/internal/tenancy/seed.go`
-- [ ] T033 [P] [US1] Add unit test asserting header breadcrumb output in `tests/unit/layout_header_test.go`
-- [ ] T034 [US1] Log tenant selection events with structured metadata in `backend/internal/tenancy/audit.go`
-- [ ] T035 [P] [US1] Add integration test verifying tenant selection log emission in `tests/integration/tenancy_logging_test.go`
-- [ ] T036 [US1] Log machine selection events with machine metadata in `backend/internal/tenancy/audit.go`
-- [ ] T037 [P] [US1] Add integration test verifying machine selection log emission in `tests/integration/machine_logging_test.go`
+- [X] T026 [US1] Implement tenancy repository with scoped queries in `backend/internal/tenancy/repository.go`
+- [X] T027 [US1] Implement `/tenants` list handler in `backend/internal/http/handlers/tenants.go`
+- [X] T028 [US1] Implement tenant machine list handler in `backend/internal/http/handlers/machines.go`
+- [X] T029 [US1] Build launch and machine picker templ views in `backend/internal/templ/launch.templ`
+- [X] T030 [US1] Render header breadcrumb for tenant/machine in `backend/internal/templ/layout.templ`
+- [X] T031 [US1] Wire tenant/machine routes and context injection in `backend/internal/http/router.go`
+- [X] T032 [US1] Seed sample tenant and machine records for demo in `backend/internal/tenancy/seed.go`
+- [X] T033 [P] [US1] Add unit test asserting header breadcrumb output in `tests/unit/layout_header_test.go`
+- [X] T034 [US1] Log tenant selection events with structured metadata in `backend/internal/tenancy/audit.go`
+- [X] T035 [P] [US1] Add integration test verifying tenant selection log emission in `tests/integration/tenancy_logging_test.go`
+- [X] T036 [US1] Log machine selection events with machine metadata in `backend/internal/tenancy/audit.go`
+- [X] T037 [P] [US1] Add integration test verifying machine selection log emission in `tests/integration/machine_logging_test.go`
 
 ---
 
