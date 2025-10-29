@@ -25,21 +25,21 @@
 
 **Purpose**: Core infrastructure—Ent schemas, ingestion security, routing, CI, and performance baselines.
 
-- [ ] T008 Define tenant schema with mixins in `backend/ent/schema/tenant.go`
-- [ ] T009 [P] Define machine schema and relationships in `backend/ent/schema/machine.go`
-- [ ] T010 [P] Define scan, duplicate group, file instance, and action audit schemas in `backend/ent/schema/scan.go`, `backend/ent/schema/duplicategroup.go`, `backend/ent/schema/fileinstance.go`, `backend/ent/schema/actionaudit.go`
-- [ ] T011 Generate Ent client and migration files via `backend/ent/generate.go`
-- [ ] T012 Implement configuration bootstrap, including per-tenant HMAC signing secrets, in `backend/internal/app/config.go`
-- [ ] T013 Implement logging and metrics middleware scaffolding in `backend/internal/http/middleware/instrumentation.go`
-- [ ] T014 Build initial chi router wiring and templ renderer in `backend/internal/http/router.go`
-- [ ] T015 Implement ingestion handler with manifest validation and HMAC signature rejection in `backend/internal/ingestion/handler.go`
-- [ ] T016 [P] Add contract tests for signed/unsigned ingestion payloads in `tests/contract/ingestion_test.go`
-- [ ] T017 [P] Emit ingestion latency, signature failure, and error metrics in `backend/internal/ingestion/metrics.go`
-- [ ] T018 [P] Add ingestion performance benchmark for ≤500 ms acknowledgement in `tests/perf/ingestion_bench_test.go`
-- [ ] T019 [P] Implement seed CLI command for demo data in `backend/cmd/duplynx/seed/main.go`
-- [ ] T020 [P] Configure Playwright project and browsers in `tests/e2e/playwright.config.ts`
-- [ ] T021 [P] Add CI workflow for lint, go test, Playwright, and perf benchmarks in `.github/workflows/ci.yml`
-- [ ] T022 Enforce read-only database mode for GUI instances in `backend/internal/app/config.go`
+- [X] T008 Define tenant schema with mixins in `backend/ent/schema/tenant.go`
+- [X] T009 [P] Define machine schema and relationships in `backend/ent/schema/machine.go`
+- [X] T010 [P] Define scan, duplicate group, file instance, and action audit schemas in `backend/ent/schema/scan.go`, `backend/ent/schema/duplicategroup.go`, `backend/ent/schema/fileinstance.go`, `backend/ent/schema/actionaudit.go`
+- [X] T011 Generate Ent client and migration files via `backend/ent/generate.go`
+- [X] T012 Implement configuration bootstrap, including per-tenant HMAC signing secrets, in `backend/internal/app/config.go`
+- [X] T013 Implement logging and metrics middleware scaffolding in `backend/internal/http/middleware/instrumentation.go`
+- [X] T014 Build initial chi router wiring and templ renderer in `backend/internal/http/router.go`
+- [X] T015 Implement ingestion handler with manifest validation and HMAC signature rejection in `backend/internal/ingestion/handler.go`
+- [X] T016 [P] Add contract tests for signed/unsigned ingestion payloads in `tests/contract/ingestion_test.go`
+- [X] T017 [P] Emit ingestion latency, signature failure, and error metrics in `backend/internal/ingestion/metrics.go`
+- [X] T018 [P] Add ingestion performance benchmark for ≤500 ms acknowledgement in `tests/perf/ingestion_bench_test.go`
+- [X] T019 [P] Implement seed CLI command for demo data in `backend/cmd/duplynx/seed/main.go`
+- [X] T020 [P] Configure Playwright project and browsers in `tests/e2e/playwright.config.ts`
+- [X] T021 [P] Add CI workflow for lint, go test, Playwright, and perf benchmarks in `.github/workflows/ci.yml`
+- [X] T022 Enforce read-only database mode for GUI instances in `backend/internal/app/config.go`
 
 ---
 
