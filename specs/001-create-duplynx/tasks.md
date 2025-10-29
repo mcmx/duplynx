@@ -11,13 +11,13 @@
 
 **Purpose**: Establish repo structure, tooling, and shared UI assets.
 
-- [ ] T001 Scaffold project directories per implementation plan in `backend/` and `tests/`
-- [ ] T002 Initialize Go module and workspace metadata in `backend/go.mod`
-- [ ] T003 Create primary server entrypoint with flag parsing in `backend/cmd/duplynx/main.go`
-- [ ] T004 [P] Configure linting/format tooling via `backend/.golangci.yml`
-- [ ] T005 [P] Add task runner targets for lint/test in `Makefile`
-- [ ] T006 [P] Configure Tailwind build pipeline in `backend/web/tailwind.config.js` and `backend/web/input.css`
-- [ ] T007 [P] Scaffold base templ layout and shared components in `backend/internal/templ/layout.templ`
+- [X] T001 Scaffold project directories per implementation plan in `backend/` and `tests/`
+- [X] T002 Initialize Go module and workspace metadata in `backend/go.mod`
+- [X] T003 Create primary server entrypoint with flag parsing in `backend/cmd/duplynx/main.go`
+- [X] T004 [P] Configure linting/format tooling via `backend/.golangci.yml`
+- [X] T005 [P] Add task runner targets for lint/test in `Makefile`
+- [X] T006 [P] Configure Tailwind build pipeline in `backend/web/tailwind.config.js` and `backend/web/input.css`
+- [X] T007 [P] Scaffold base templ layout and shared components in `backend/internal/templ/layout.templ`
 
 ---
 
