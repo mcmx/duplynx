@@ -7,7 +7,7 @@
 
 ## Summary
 
-Build the initial DupLynx platform: a Go-based multi-tenant service backed by SQLite/Ent that seeds demo data, ingests file scan results from predefined machines, and serves both an ingestion API and templ/htmx-powered dashboard to manage duplicate groups, keeper assignments, and lifecycle statuses.
+Build the initial DupLynx platform: a Go-based multi-tenant service backed by SQLite/Ent that seeds demo data, ingests HMAC-signed file scan results from predefined machines, and serves both an ingestion API and templ/htmx-powered dashboard to manage duplicate groups, keeper assignments, and lifecycle statuses.
 
 ## Technical Context
 
@@ -23,8 +23,8 @@ Build the initial DupLynx platform: a Go-based multi-tenant service backed by SQ
 **Testing**: Go `testing` (unit + integration), httptest contract suites, Playwright/htmx UI smoke  
 **Target Platform**: Linux/macOS servers for API + dashboard; stateless ingestion and GUI instances  
 **Project Type**: Web application (Go backend with server-rendered frontend)  
-**Performance Goals**: <1 s tenant/machine load, <200 ms board update, <500 ms ingestion acknowledgement  
-**Constraints**: Demo must run without external auth, single SQLite file, horizontal scale via stateless instances  
+**Performance Goals**: <1 s tenant/machine load, <200 ms board update, <500 ms ingestion acknowledgement with metrics coverage  
+**Constraints**: Demo must run without external auth, SQLite persisted on a designated ingestion writer (single-writer, multi-reader) while additional GUI pods operate read-only  
 **Scale/Scope**: Phase 0 seed: 1 tenant, 5 machines, 3 scans, up to 200 duplicate groups per scan; ready for multiple ingest GUI pods
 
 ## Constitution Check
@@ -34,7 +34,7 @@ Build the initial DupLynx platform: a Go-based multi-tenant service backed by SQ
 - `Code Quality Fidelity`: Enforce `golangci-lint` and `go fmt` in CI, require package-level docstrings for new modules (tenancy, scans, ingestion), and capture architecture notes in spec updates; code review approval mandatory.
 - `Testing Standardization`: Run `go test ./...` (unit/integration), contract suites for ingestion API + dashboard JSON, and Playwright smoke tests; CI blocks on any failures or coverage <90% for touched packages.
 - `Consistent User Experience`: Use templ components with Tailwind tokens, ensure ARIA landmarks and keyboard traversal for kanban board, and run axe-core accessibility checks on tenant pickers and scan board.
-- `Performance Discipline`: Instrument middleware timing for ingestion + board endpoints, benchmark Ent queries for board load, log action acknowledgements; budgets set to 1 s load, 200 ms updates, 500 ms ingestion response with alerts on breach.
+- `Performance Discipline`: Instrument middleware timing for ingestion + board endpoints, benchmark Ent queries for board load, log action acknowledgements, and capture ingestion latency metrics; budgets set to 1 s load, 200 ms updates, 500 ms ingestion response with alerts on breach.
 
 _Post-design review (2025-10-27): Phase 1 artifacts uphold all gates; no exceptions required._
 

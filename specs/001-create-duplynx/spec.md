@@ -19,7 +19,7 @@ First-time visitors see the launch screen, pick a sample tenant, choose from tha
 
 **Why this priority**: Without tenant and machine selection, no other functionality is reachable; this is the minimal path to interact with DupLynx.
 
-**Independent Test**: Automated UI smoke test navigates from launch to scan list by selecting tenant “Sample Tenant A” and machine “Ares-Laptop,” asserting machine metadata and scan list render successfully.
+**Independent Test**: Automated UI smoke test navigates from launch to scan list by selecting tenant “Sample Tenant A” and machine “Ares-Laptop,” asserting machine metadata and scan list render successfully within three clicks and verifying the header shows “Sample Tenant A / Ares-Laptop.”
 
 **Constitution Alignment**:
 - UX: Reuse DupLynx global layout, typography tokens, and card list component for tenant/machine pickers.
@@ -30,6 +30,7 @@ First-time visitors see the launch screen, pick a sample tenant, choose from tha
 
 1. **Given** DupLynx launches fresh, **When** the user selects “Sample Tenant A,” **Then** only that tenant’s predefined machines (1 laptop, 4 servers) appear with category labels.
 2. **Given** the machine list is visible, **When** the user selects “Ares-Laptop,” **Then** the scan list view loads showing three sample scans tied to that tenant.
+3. **Given** the scan list view is visible, **When** the global header renders, **Then** it shows the breadcrumb “Sample Tenant A / Ares-Laptop.”
 
 ---
 
@@ -69,7 +70,7 @@ Stewards adjust each duplicate group by designating a keeper machine for the mas
 **Acceptance Scenarios**:
 
 1. **Given** a duplicate group without a keeper, **When** the user assigns “Helios-Server-02” as keeper, **Then** the card indicates the keeper, persists the assignment, and audits the change.
-2. **Given** a duplicate group with non-keeper copies, **When** the user chooses “Quarantine,” **Then** the system marks the relevant file instances as quarantined and moves the card to “Action Needed.”
+2. **Given** a duplicate group with non-keeper copies, **When** the user chooses “Quarantine,” **Then** the system marks the relevant file instances as quarantined while keeping the card in its current status lane until a steward manually reclassifies it.
 
 ---
 
@@ -115,13 +116,13 @@ Platform admins must ensure each tenant’s data, machines, scans, and duplicate
 - **FR-004**: Each scan entry MUST display metadata (name, executed machine, timestamp, duplicate count snapshot) and link to the management board.
 - **FR-005**: Management board MUST organize duplicate groups into the statuses “Review,” “Action Needed,” “Resolved,” and “Archived” with counts per lane.
 - **FR-006**: Duplicate group cards MUST allow assigning any machine from the tenant’s roster as the keeper for the master copy with audit trail.
-- **FR-007**: Duplicate group cards MUST expose actions to delete redundant files, create hardlinks back to the keeper copy, and quarantine suspicious files; initial implementation MAY stub side effects but MUST persist intended state.
+- **FR-007**: Duplicate group cards MUST expose actions to delete redundant files, create hardlinks back to the keeper copy, and quarantine suspicious files; initial implementation MAY stub side effects but MUST persist intended state and record `ActionAudit` entries flagged as `stubbed=true`.
 - **FR-008**: Duplicate group actions MUST NOT automatically change the group’s status; stewards manually move groups between lanes after reviewing outcomes.
 - **FR-009**: All data access APIs MUST enforce tenant scoping, preventing machines, scans, or duplicate groups from leaking across tenants.
-- **FR-010**: Web dashboard MUST surface current tenant context and machine selection in the global header for clarity.
+- **FR-010**: Web dashboard MUST surface current tenant context and machine selection in the global header’s breadcrumb (e.g., “Sample Tenant A / Ares-Laptop”) across all dashboard views.
 - **FR-011**: System MUST log key user actions (tenant selection, machine selection, keeper assignment, duplicate actions) for future monitoring hooks.
-- **FR-012**: Server MUST expose ingestion endpoints that accept signed scan result payloads from client agents that only perform filesystem scanning and data upload.
-- **FR-013**: Server deployment MUST support separate stateless instances for ingestion API traffic and dashboard GUI traffic sharing the same SQLite/Ent data store.
+- **FR-012**: Server MUST expose ingestion endpoints that accept JSON scan manifests signed with HMAC-SHA256 per-tenant secrets; unsigned or tampered payloads MUST be rejected with audit logging.
+- **FR-013**: Server deployment MUST support separate stateless instances for ingestion API traffic and dashboard GUI traffic, with a designated ingestion writer process serializing SQLite mutations via file locking or job queue coordination to preserve database integrity.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -138,5 +139,6 @@ Platform admins must ensure each tenant’s data, machines, scans, and duplicate
 
 - **SC-001**: Demo users can navigate from launch to a scan board and identify a duplicate group within 3 clicks using the standard dashboard layout.
 - **SC-002**: Linting/static analysis passes with zero new warnings, and minimum 90% coverage is maintained for modules handling tenant scoping and duplicate board logic.
-- **SC-003**: Automated UI/integration suite exercising tenant selection, scan navigation, and keeper assignment completes in ≤8 minutes on CI hardware.
-- **SC-004**: Seeded board renders in ≤1 s and action acknowledgements respond in ≤500 ms for up to 200 duplicate groups per scan during demos.
+- **SC-003**: Automated UI/integration suite exercising tenant selection, scan navigation, and keeper assignment completes in ≤8 minutes on CI hardware with CI monitoring that alerts on breaches.
+- **SC-004**: Seeded board renders in ≤1 s and action acknowledgements respond in ≤500 ms for up to 200 duplicate groups per scan during demos, with instrumentation capturing render timings.
+- **SC-005**: Ingestion endpoint acknowledges signed scan uploads in ≤500 ms p95, emitting metrics for latency, signature failures, and ingestion error rates.

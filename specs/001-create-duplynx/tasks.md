@@ -3,7 +3,7 @@
 **Input**: Design documents from `/specs/001-create-duplynx/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
-**Tests**: Automated tests are required under the DupLynx constitution—plan linting, unit, integration, contract, UX, and performance coverage before implementation.
+**Tests**: Automated tests are required—plan linting, unit, integration, contract, UX, and performance coverage before implementation.
 
 **Organization**: Tasks are grouped by user story so each slice is independently buildable, testable, and demoable.
 
@@ -23,42 +23,52 @@
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Core infrastructure that all stories depend on—Ent schemas, routing, ingestion skeleton, CI, and tooling.
+**Purpose**: Core infrastructure—Ent schemas, ingestion security, routing, CI, and performance baselines.
 
 - [ ] T008 Define tenant schema with mixins in `backend/ent/schema/tenant.go`
 - [ ] T009 [P] Define machine schema and relationships in `backend/ent/schema/machine.go`
 - [ ] T010 [P] Define scan, duplicate group, file instance, and action audit schemas in `backend/ent/schema/scan.go`, `backend/ent/schema/duplicategroup.go`, `backend/ent/schema/fileinstance.go`, `backend/ent/schema/actionaudit.go`
 - [ ] T011 Generate Ent client and migration files via `backend/ent/generate.go`
-- [ ] T012 Implement configuration and SQLite connection bootstrap in `backend/internal/app/config.go`
+- [ ] T012 Implement configuration bootstrap, including per-tenant HMAC signing secrets, in `backend/internal/app/config.go`
 - [ ] T013 Implement logging and metrics middleware scaffolding in `backend/internal/http/middleware/instrumentation.go`
-- [ ] T014 Build initial chi router wiring templ renderer in `backend/internal/http/router.go`
-- [ ] T015 [P] Implement ingestion handler stub accepting scan payloads in `backend/internal/ingestion/handler.go`
-- [ ] T016 [P] Implement seed CLI command for demo data in `backend/cmd/duplynx/seed/main.go`
-- [ ] T017 [P] Configure Playwright project and browsers in `tests/e2e/playwright.config.ts`
-- [ ] T018 [P] Add CI workflow for lint, go test, Playwright smoke in `.github/workflows/ci.yml`
+- [ ] T014 Build initial chi router wiring and templ renderer in `backend/internal/http/router.go`
+- [ ] T015 Implement ingestion handler with manifest validation and HMAC signature rejection in `backend/internal/ingestion/handler.go`
+- [ ] T016 [P] Add contract tests for signed/unsigned ingestion payloads in `tests/contract/ingestion_test.go`
+- [ ] T017 [P] Emit ingestion latency, signature failure, and error metrics in `backend/internal/ingestion/metrics.go`
+- [ ] T018 [P] Add ingestion performance benchmark for ≤500 ms acknowledgement in `tests/perf/ingestion_bench_test.go`
+- [ ] T019 [P] Implement seed CLI command for demo data in `backend/cmd/duplynx/seed/main.go`
+- [ ] T020 [P] Configure Playwright project and browsers in `tests/e2e/playwright.config.ts`
+- [ ] T021 [P] Add CI workflow for lint, go test, Playwright, and perf benchmarks in `.github/workflows/ci.yml`
+- [ ] T022 Enforce read-only database mode for GUI instances in `backend/internal/app/config.go`
 
 ---
 
 ## Phase 3: User Story 1 – Tenant & Machine Onboarding Flow (Priority: P1) 🎯 MVP
 
-**Goal**: Visitors select a tenant, choose one of its predefined machines, and reach the scan catalog without authentication.
+**Goal**: Visitors select a tenant, choose one of its machines, and reach the scan catalog without authentication.
 
-**Independent Test**: Launch DupLynx, select “Sample Tenant A” then “Ares-Laptop,” verify machine metadata and seeded scans render.
+**Independent Test**: Launch DupLynx, select “Sample Tenant A” then “Ares-Laptop,” and confirm the catalog appears within exactly three interactions.
 
 ### Tests
 
-- [ ] T019 [P] [US1] Write contract tests for `/tenants` and `/tenants/{tenantSlug}/machines` in `tests/contract/tenants_machines_test.go`
-- [ ] T020 [P] [US1] Create Playwright flow covering tenant and machine selection in `tests/e2e/onboarding.spec.ts`
-- [ ] T021 [P] [US1] Add integration test for tenant machine filtering logic in `tests/integration/tenancy_flow_test.go`
+- [ ] T023 [P] [US1] Write contract tests for `/tenants` and `/tenants/{tenantSlug}/machines` in `tests/contract/tenants_machines_test.go`
+- [ ] T024 [P] [US1] Create Playwright flow verifying three-click onboarding and header breadcrumb in `tests/e2e/onboarding.spec.ts`
+- [ ] T025 [P] [US1] Add integration test for tenant machine filtering logic in `tests/integration/tenancy_flow_test.go`
 
 ### Implementation
 
-- [ ] T022 [US1] Implement tenancy repository with scoped queries in `backend/internal/tenancy/repository.go`
-- [ ] T023 [US1] Implement `/tenants` list handler in `backend/internal/http/handlers/tenants.go`
-- [ ] T024 [US1] Implement tenant machine list handler in `backend/internal/http/handlers/machines.go`
-- [ ] T025 [US1] Build launch and machine picker templ views in `backend/internal/templ/launch.templ`
-- [ ] T026 [US1] Wire tenant/machine routes and context injection in `backend/internal/http/router.go`
-- [ ] T027 [US1] Seed sample tenant and machine records for demo in `backend/internal/tenancy/seed.go`
+- [ ] T026 [US1] Implement tenancy repository with scoped queries in `backend/internal/tenancy/repository.go`
+- [ ] T027 [US1] Implement `/tenants` list handler in `backend/internal/http/handlers/tenants.go`
+- [ ] T028 [US1] Implement tenant machine list handler in `backend/internal/http/handlers/machines.go`
+- [ ] T029 [US1] Build launch and machine picker templ views in `backend/internal/templ/launch.templ`
+- [ ] T030 [US1] Render header breadcrumb for tenant/machine in `backend/internal/templ/layout.templ`
+- [ ] T031 [US1] Wire tenant/machine routes and context injection in `backend/internal/http/router.go`
+- [ ] T032 [US1] Seed sample tenant and machine records for demo in `backend/internal/tenancy/seed.go`
+- [ ] T033 [P] [US1] Add unit test asserting header breadcrumb output in `tests/unit/layout_header_test.go`
+- [ ] T034 [US1] Log tenant selection events with structured metadata in `backend/internal/tenancy/audit.go`
+- [ ] T035 [P] [US1] Add integration test verifying tenant selection log emission in `tests/integration/tenancy_logging_test.go`
+- [ ] T036 [US1] Log machine selection events with machine metadata in `backend/internal/tenancy/audit.go`
+- [ ] T037 [P] [US1] Add integration test verifying machine selection log emission in `tests/integration/machine_logging_test.go`
 
 ---
 
@@ -66,22 +76,22 @@
 
 **Goal**: Users open a scan and view duplicate groups arranged by status lanes with performant rendering.
 
-**Independent Test**: Open “Baseline Sweep 2025-10-01” board, verify each lane shows counts and metadata, expand a card to inspect file instances.
+**Independent Test**: Open “Baseline Sweep 2025-10-01,” verify lane counts and card expansion with file metadata.
 
 ### Tests
 
-- [ ] T028 [P] [US2] Write contract tests for `/scans` and `/duplicate-groups` endpoints in `tests/contract/scans_test.go`
-- [ ] T029 [P] [US2] Add integration test assembling board data in `tests/integration/scan_board_test.go`
-- [ ] T030 [P] [US2] Add unit tests for board view model grouping in `tests/unit/board_view_test.go`
+- [ ] T038 [P] [US2] Write contract tests for `/tenants/{tenantSlug}/scans` and `/scans/{scanId}` in `tests/contract/scans_test.go`
+- [ ] T039 [P] [US2] Add integration test assembling board data in `tests/integration/scan_board_test.go`
+- [ ] T040 [P] [US2] Add unit tests for board view model grouping in `tests/unit/board_view_test.go`
 
 ### Implementation
 
-- [ ] T031 [US2] Implement scan repository with status aggregations in `backend/internal/scans/repository.go`
-- [ ] T032 [US2] Implement board service composing lanes in `backend/internal/scans/service.go`
-- [ ] T033 [US2] Implement scan board HTTP handlers and JSON responses in `backend/internal/http/handlers/scan_board.go`
-- [ ] T034 [US2] Build templ components for board shell and lanes in `backend/internal/templ/board.templ`
-- [ ] T035 [US2] Add htmx partial handlers for lane refresh in `backend/internal/http/handlers/board_partials.go`
-- [ ] T036 [US2] Instrument board rendering timings and virtualized list hooks in `backend/internal/http/middleware/board_metrics.go`
+- [ ] T041 [US2] Implement scan repository with status aggregations in `backend/internal/scans/repository.go`
+- [ ] T042 [US2] Implement board service composing lanes in `backend/internal/scans/service.go`
+- [ ] T043 [US2] Implement scan board HTTP handlers and JSON responses in `backend/internal/http/handlers/scan_board.go`
+- [ ] T044 [US2] Build templ components for board shell and lanes in `backend/internal/templ/board.templ`
+- [ ] T045 [US2] Add htmx partial handlers for lane refresh in `backend/internal/http/handlers/board_partials.go`
+- [ ] T046 [US2] Instrument board rendering timings and virtualized list hooks in `backend/internal/http/middleware/board_metrics.go`
 
 ---
 
@@ -89,21 +99,25 @@
 
 **Goal**: Stewards assign keeper machines and trigger duplicate actions with audit logging and responsive UI feedback.
 
-**Independent Test**: Assign “Helios-Server-02” as keeper for a group, execute a quarantine action, verify audit trail and lane status remain consistent.
+**Independent Test**: Assign “Helios-Server-02” as keeper, execute quarantine, verify audit trail and that status remains unchanged without manual reassignment.
 
 ### Tests
 
-- [ ] T037 [P] [US3] Write contract tests for `/duplicate-groups/{groupId}/keeper` and `/duplicate-groups/{groupId}/actions` in `tests/contract/actions_test.go`
-- [ ] T038 [P] [US3] Add integration test for keeper assignment state transitions in `tests/integration/keeper_assignment_test.go`
-- [ ] T039 [P] [US3] Add unit tests for action dispatcher outcomes in `tests/unit/actions_dispatcher_test.go`
+- [ ] T047 [P] [US3] Write contract tests for `/duplicate-groups/{groupId}/keeper` and `/duplicate-groups/{groupId}/actions` in `tests/contract/actions_test.go`
+- [ ] T048 [P] [US3] Add integration test confirming keeper assignment and manual status retention in `tests/integration/keeper_assignment_test.go`
+- [ ] T049 [P] [US3] Add unit tests for action dispatcher outcomes in `tests/unit/actions_dispatcher_test.go`
 
 ### Implementation
 
-- [ ] T040 [US3] Implement action dispatcher coordinating keeper and action workflows in `backend/internal/actions/dispatcher.go`
-- [ ] T041 [US3] Implement action audit persistence layer in `backend/internal/actions/audit_store.go`
-- [ ] T042 [US3] Implement keeper and action HTTP handlers with validation in `backend/internal/http/handlers/actions.go`
-- [ ] T043 [US3] Enhance duplicate card templ with keeper selection UI in `backend/internal/templ/components/duplicate_card.templ`
-- [ ] T044 [US3] Implement htmx response fragments for action feedback in `backend/internal/http/handlers/actions_htmx.go`
+- [ ] T050 [US3] Implement action dispatcher coordinating keeper and action workflows in `backend/internal/actions/dispatcher.go`
+- [ ] T051 [US3] Implement action audit persistence layer in `backend/internal/actions/audit_store.go`
+- [ ] T052 [US3] Implement keeper and action HTTP handlers with validation in `backend/internal/http/handlers/actions.go`
+- [ ] T053 [US3] Enhance duplicate card templ with keeper selection UI in `backend/internal/templ/components/duplicate_card.templ`
+- [ ] T054 [US3] Implement htmx response fragments for action feedback in `backend/internal/http/handlers/actions_htmx.go`
+- [ ] T055 [US3] Record stubbed action audit entries with `stubbed=true` in `backend/internal/actions/dispatcher.go`
+- [ ] T056 [P] [US3] Unit test verifying stubbed audit payload in `tests/unit/actions_dispatcher_test.go`
+- [ ] T057 [US3] Log keeper assignment and duplicate action events in `backend/internal/actions/audit_logger.go`
+- [ ] T058 [P] [US3] Add integration test verifying keeper/action logging pipeline in `tests/integration/actions_logging_test.go`
 
 ---
 
@@ -111,18 +125,19 @@
 
 **Goal**: Guarantee tenant-scoped access so cross-tenant requests fail safely and are observable.
 
-**Independent Test**: When authenticated for “Sample Tenant A,” attempting to fetch a “Sample Tenant B” scan returns a tenant scope warning and 404.
+**Independent Test**: Attempt to fetch another tenant’s scan while scoped to “Sample Tenant A” and receive a tenant scope warning plus 404.
 
 ### Tests
 
-- [ ] T045 [P] [US4] Add unit tests for tenancy middleware context enforcement in `tests/unit/tenancy_middleware_test.go`
-- [ ] T046 [P] [US4] Add integration test for cross-tenant access rejection in `tests/integration/tenant_guard_test.go`
+- [ ] T059 [P] [US4] Add unit tests for tenancy middleware context enforcement in `tests/unit/tenancy_middleware_test.go`
+- [ ] T060 [P] [US4] Add integration test for cross-tenant access rejection in `tests/integration/tenant_guard_test.go`
+- [ ] T061 [US4] Audit static asset routes to ensure tenant headers persist in `backend/internal/http/handlers/static.go`
 
 ### Implementation
 
-- [ ] T047 [US4] Implement tenancy scoping middleware attaching tenant context in `backend/internal/tenancy/middleware.go`
-- [ ] T048 [US4] Apply tenant filters across repositories in `backend/internal/tenancy/scoped_repository.go`
-- [ ] T049 [US4] Create tenant scope violation templ feedback in `backend/internal/templ/errors/tenant_scope.templ`
+- [ ] T062 [US4] Implement tenancy scoping middleware attaching tenant context in `backend/internal/tenancy/middleware.go`
+- [ ] T063 [US4] Apply tenant filters across repositories in `backend/internal/tenancy/scoped_repository.go`
+- [ ] T064 [US4] Create tenant scope violation templ feedback in `backend/internal/templ/errors/tenant_scope.templ`
 
 ---
 
@@ -130,21 +145,23 @@
 
 **Purpose**: Documentation, benchmarks, accessibility, and release readiness.
 
-- [ ] T050 Update quickstart instructions with final commands in `specs/001-create-duplynx/quickstart.md`
-- [ ] T051 Document deployment and scaling notes in `docs/duplynx-demo.md`
-- [ ] T052 Add performance benchmark covering board render latency in `tests/perf/board_bench_test.go`
-- [ ] T053 Run accessibility and contrast checks via Playwright axe audit in `tests/e2e/accessibility.spec.ts`
-- [ ] T054 Add final CI verification target for go test/playwright combo in `Makefile`
+- [ ] T065 Update quickstart instructions with final commands in `specs/001-create-duplynx/quickstart.md`
+- [ ] T066 Document SQLite writer constraints and deployment notes in `docs/duplynx-demo.md`
+- [ ] T067 Add board performance benchmark covering render latency in `tests/perf/board_bench_test.go`
+- [ ] T068 Run accessibility and contrast checks via Playwright axe audit in `tests/e2e/accessibility.spec.ts`
+- [ ] T069 Add final CI verification target for go test/playwright/perf combo with suite timing gates in `Makefile`
+- [ ] T070 Monitor CI e2e + integration runtime and fail when >8m in `.github/workflows/ci.yml`
+- [ ] T071 Document logging coverage for tenant/machine/action events in `docs/duplynx-demo.md`
 
 ---
 
 ## Dependencies & Execution Order
 
 - **Phase 1 → Phase 2**: Foundational work depends on setup.
-- **Phase 2 → Phases 3-6**: All user stories require Ent schemas, routing, ingestion, and CI tooling.
+- **Phase 2 → Phases 3-6**: All user stories require Ent schemas, secure ingestion, routing, and CI tooling.
 - **Phase 3 (US1)**: Enables tenant context and seeding—MVP checkpoint.
-- **Phase 4 (US2)**: Depends on US1 data structures but can progress in parallel once foundational data services exist.
-- **Phase 5 (US3)**: Depends on US2 duplicate group representations to attach actions.
+- **Phase 4 (US2)**: Depends on US1 data structures but can progress in parallel once foundational services exist.
+- **Phase 5 (US3)**: Builds on duplicate group representations from US2 and ingestion logging from Phase 2.
 - **Phase 6 (US4)**: Builds on tenancy infrastructure from US1 and repository layers from US2/US3.
 - **Phase 7**: Runs after desired user stories complete; captures documentation and performance compliance.
 
@@ -161,13 +178,12 @@
 
 ### User Story 1
 ```bash
-# Parallelizable tasks:
 # Tests
 run tests/contract/tenants_machines_test.go
 run tests/e2e/onboarding.spec.ts
 run tests/integration/tenancy_flow_test.go
 
-# Views and handlers
+# Implementation
 edit backend/internal/http/handlers/tenants.go
 edit backend/internal/templ/launch.templ
 ```
@@ -235,17 +251,17 @@ edit backend/internal/templ/errors/tenant_scope.templ
 
 ## Task Counts & Coverage
 
-- **Total tasks**: 54
+- **Total tasks**: 71
 - **Per user story**:
-  - US1: 9 tasks
+  - US1: 15 tasks
   - US2: 9 tasks
-  - US3: 8 tasks
-  - US4: 5 tasks
+  - US3: 12 tasks
+  - US4: 6 tasks
 - **Parallel opportunities**: Tests and component work within each story marked `[P]` can proceed concurrently once prerequisites land.
 - **Independent test criteria**:
-  - US1: Tenant and machine selection flow validates seed data and navigation.
+  - US1: Tenant and machine selection completes within three clicks and loads seeded scans.
   - US2: Scan board lanes render with correct counts and card expansion details.
-  - US3: Keeper assignment and actions persist state with audit trail feedback.
+  - US3: Keeper assignment succeeds, actions log audits, and statuses remain manual.
   - US4: Cross-tenant requests fail with scoped warnings and 404s.
 - **Suggested MVP scope**: Deliver through Phase 3 (US1) to demonstrate tenant/machine onboarding end-to-end.
 
