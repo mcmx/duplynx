@@ -80,18 +80,18 @@
 
 ### Tests
 
-- [ ] T038 [P] [US2] Write contract tests for `/tenants/{tenantSlug}/scans` and `/scans/{scanId}` in `tests/contract/scans_test.go`
-- [ ] T039 [P] [US2] Add integration test assembling board data in `tests/integration/scan_board_test.go`
-- [ ] T040 [P] [US2] Add unit tests for board view model grouping in `tests/unit/board_view_test.go`
+- [X] T038 [P] [US2] Write contract tests for `/tenants/{tenantSlug}/scans` and `/scans/{scanId}` in `tests/contract/scans_test.go`
+- [X] T039 [P] [US2] Add integration test assembling board data in `tests/integration/scan_board_test.go`
+- [X] T040 [P] [US2] Add unit tests for board view model grouping in `tests/unit/board_view_test.go`
 
 ### Implementation
 
-- [ ] T041 [US2] Implement scan repository with status aggregations in `backend/internal/scans/repository.go`
-- [ ] T042 [US2] Implement board service composing lanes in `backend/internal/scans/service.go`
-- [ ] T043 [US2] Implement scan board HTTP handlers and JSON responses in `backend/internal/http/handlers/scan_board.go`
-- [ ] T044 [US2] Build templ components for board shell and lanes in `backend/internal/templ/board.templ`
-- [ ] T045 [US2] Add htmx partial handlers for lane refresh in `backend/internal/http/handlers/board_partials.go`
-- [ ] T046 [US2] Instrument board rendering timings and virtualized list hooks in `backend/internal/http/middleware/board_metrics.go`
+- [X] T041 [US2] Implement scan repository with status aggregations in `backend/internal/scans/repository.go`
+- [X] T042 [US2] Implement board service composing lanes in `backend/internal/scans/service.go`
+- [X] T043 [US2] Implement scan board HTTP handlers and JSON responses in `backend/internal/http/handlers/scan_board.go`
+- [X] T044 [US2] Build templ components for board shell and lanes in `backend/internal/templ/board.templ`
+- [X] T045 [US2] Add htmx partial handlers for lane refresh in `backend/internal/http/handlers/board_partials.go`
+- [X] T046 [US2] Instrument board rendering timings and virtualized list hooks in `backend/internal/http/middleware/board_metrics.go`
 
 ---
 

@@ -7,12 +7,15 @@ import (
 
 	"github.com/mcmx/duplynx/internal/http/handlers"
 	appmiddleware "github.com/mcmx/duplynx/internal/http/middleware"
+	"github.com/mcmx/duplynx/internal/scans"
+	"github.com/mcmx/duplynx/internal/templ"
 	"github.com/mcmx/duplynx/internal/tenancy"
 )
 
 // Dependencies encapsulates services required by HTTP handlers.
 type Dependencies struct {
 	TenancyRepo *tenancy.Repository
+	ScanService scans.Service
 }
 
 // NewRouter wires baseline routes and middleware; handlers attach in feature phases.
@@ -40,9 +43,13 @@ func NewRouter(deps Dependencies) *chi.Mux {
 
 		tenantsHandler := handlers.TenantsHandler{Repo: deps.TenancyRepo}
 		machinesHandler := handlers.MachinesHandler{Repo: deps.TenancyRepo}
+		scanListHandler := handlers.ScanListHandler{Service: deps.ScanService}
+		scanBoardHandler := handlers.ScanBoardHandler{Service: deps.ScanService}
 
 		r.Get("/tenants", tenantsHandler.ServeHTTP)
 		r.Get("/tenants/{tenantSlug}/machines", machinesHandler.ServeHTTP)
+		r.Get("/tenants/{tenantSlug}/scans", scanListHandler.ServeHTTP)
+		r.Get("/scans/{scanID}", scanBoardHandler.ServeHTTP)
 	}
 
 	return r
