@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/mcmx/duplynx/internal/actions"
+	"github.com/mcmx/duplynx/internal/tenancy"
 )
 
 // KeeperHandler assigns a keeper machine to a duplicate group.
@@ -25,12 +26,18 @@ func (h KeeperHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	if req.TenantSlug == "" {
-		http.Error(w, "tenantSlug required", http.StatusBadRequest)
+	scope, ok := tenancy.ScopeFromContext(r.Context())
+	if !ok {
+		http.Error(w, "tenant scope missing", http.StatusBadRequest)
 		return
 	}
+	if req.TenantSlug != "" && req.TenantSlug != scope.TenantSlug {
+		http.Error(w, "tenant scope violation", http.StatusNotFound)
+		return
+	}
+	tenantSlug := scope.TenantSlug
 	groupID := chi.URLParam(r, "groupId")
-	if err := h.Dispatcher.AssignKeeper(groupID, req.TenantSlug, req.KeeperMachineID); err != nil {
+	if err := h.Dispatcher.AssignKeeper(groupID, tenantSlug, req.KeeperMachineID); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -60,8 +67,17 @@ func (h ActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	if req.TenantSlug == "" || req.ActionType == "" {
-		http.Error(w, "tenantSlug and actionType required", http.StatusBadRequest)
+	scope, ok := tenancy.ScopeFromContext(r.Context())
+	if !ok {
+		http.Error(w, "tenant scope missing", http.StatusBadRequest)
+		return
+	}
+	if req.TenantSlug != "" && req.TenantSlug != scope.TenantSlug {
+		http.Error(w, "tenant scope violation", http.StatusNotFound)
+		return
+	}
+	if req.ActionType == "" {
+		http.Error(w, "actionType required", http.StatusBadRequest)
 		return
 	}
 	groupID := chi.URLParam(r, "groupId")
@@ -69,7 +85,7 @@ func (h ActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"targetFileIds": req.TargetFileIDs,
 		"notes":         req.Notes,
 	}
-	if err := h.Dispatcher.PerformAction(groupID, req.TenantSlug, "system", req.ActionType, payload); err != nil {
+	if err := h.Dispatcher.PerformAction(groupID, scope.TenantSlug, "system", req.ActionType, payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

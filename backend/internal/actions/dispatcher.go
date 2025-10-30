@@ -23,6 +23,9 @@ func (d Dispatcher) AssignKeeper(groupID, tenantSlug, machineID string) error {
 	if !ok {
 		return ErrGroupNotFound
 	}
+	if group.TenantSlug != tenantSlug {
+		return ErrGroupNotFound
+	}
 	group.KeeperMachineID = machineID
 	d.Store.Update(group)
 	d.Audit.Log(AuditEntry{
@@ -46,6 +49,9 @@ const (
 func (d Dispatcher) PerformAction(groupID, tenantSlug, actor string, action ActionType, payload map[string]any) error {
 	group, ok := d.Store.Get(groupID)
 	if !ok {
+		return ErrGroupNotFound
+	}
+	if group.TenantSlug != tenantSlug {
 		return ErrGroupNotFound
 	}
 	// Phase 1 implementation stubs remote execution, only logs audit entry.

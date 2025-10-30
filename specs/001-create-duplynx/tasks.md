@@ -103,21 +103,21 @@
 
 ### Tests
 
-- [ ] T047 [P] [US3] Write contract tests for `/duplicate-groups/{groupId}/keeper` and `/duplicate-groups/{groupId}/actions` in `tests/contract/actions_test.go`
-- [ ] T048 [P] [US3] Add integration test confirming keeper assignment and manual status retention in `tests/integration/keeper_assignment_test.go`
-- [ ] T049 [P] [US3] Add unit tests for action dispatcher outcomes in `tests/unit/actions_dispatcher_test.go`
+- [X] T047 [P] [US3] Write contract tests for `/duplicate-groups/{groupId}/keeper` and `/duplicate-groups/{groupId}/actions` in `tests/contract/actions_test.go`
+- [X] T048 [P] [US3] Add integration test confirming keeper assignment and manual status retention in `tests/integration/keeper_assignment_test.go`
+- [X] T049 [P] [US3] Add unit tests for action dispatcher outcomes in `tests/unit/actions_dispatcher_test.go`
 
 ### Implementation
 
-- [ ] T050 [US3] Implement action dispatcher coordinating keeper and action workflows in `backend/internal/actions/dispatcher.go`
-- [ ] T051 [US3] Implement action audit persistence layer in `backend/internal/actions/audit_store.go`
-- [ ] T052 [US3] Implement keeper and action HTTP handlers with validation in `backend/internal/http/handlers/actions.go`
-- [ ] T053 [US3] Enhance duplicate card templ with keeper selection UI in `backend/internal/templ/components/duplicate_card.templ`
-- [ ] T054 [US3] Implement htmx response fragments for action feedback in `backend/internal/http/handlers/actions_htmx.go`
-- [ ] T055 [US3] Record stubbed action audit entries with `stubbed=true` in `backend/internal/actions/dispatcher.go`
-- [ ] T056 [P] [US3] Unit test verifying stubbed audit payload in `tests/unit/actions_dispatcher_test.go`
-- [ ] T057 [US3] Log keeper assignment and duplicate action events in `backend/internal/actions/audit_logger.go`
-- [ ] T058 [P] [US3] Add integration test verifying keeper/action logging pipeline in `tests/integration/actions_logging_test.go`
+- [X] T050 [US3] Implement action dispatcher coordinating keeper and action workflows in `backend/internal/actions/dispatcher.go`
+- [X] T051 [US3] Implement action audit persistence layer in `backend/internal/actions/audit_store.go`
+- [X] T052 [US3] Implement keeper and action HTTP handlers with validation in `backend/internal/http/handlers/actions.go`
+- [X] T053 [US3] Enhance duplicate card templ with keeper selection UI in `backend/internal/templ/components/duplicate_card.templ`
+- [X] T054 [US3] Implement htmx response fragments for action feedback in `backend/internal/http/handlers/actions_htmx.go`
+- [X] T055 [US3] Record stubbed action audit entries with `stubbed=true` in `backend/internal/actions/dispatcher.go`
+- [X] T056 [P] [US3] Unit test verifying stubbed audit payload in `tests/unit/actions_dispatcher_test.go`
+- [X] T057 [US3] Log keeper assignment and duplicate action events in `backend/internal/actions/audit_logger.go`
+- [X] T058 [P] [US3] Add integration test verifying keeper/action logging pipeline in `tests/integration/actions_logging_test.go`
 
 ---
 
@@ -129,15 +129,15 @@
 
 ### Tests
 
-- [ ] T059 [P] [US4] Add unit tests for tenancy middleware context enforcement in `tests/unit/tenancy_middleware_test.go`
-- [ ] T060 [P] [US4] Add integration test for cross-tenant access rejection in `tests/integration/tenant_guard_test.go`
-- [ ] T061 [US4] Audit static asset routes to ensure tenant headers persist in `backend/internal/http/handlers/static.go`
+- [X] T059 [P] [US4] Add unit tests for tenancy middleware context enforcement in `tests/unit/tenancy_middleware_test.go`
+- [X] T060 [P] [US4] Add integration test for cross-tenant access rejection in `tests/integration/tenant_guard_test.go`
+- [X] T061 [US4] Audit static asset routes to ensure tenant headers persist in `backend/internal/http/handlers/static.go`
 
 ### Implementation
 
-- [ ] T062 [US4] Implement tenancy scoping middleware attaching tenant context in `backend/internal/tenancy/middleware.go`
-- [ ] T063 [US4] Apply tenant filters across repositories in `backend/internal/tenancy/scoped_repository.go`
-- [ ] T064 [US4] Create tenant scope violation templ feedback in `backend/internal/templ/errors/tenant_scope.templ`
+- [X] T062 [US4] Implement tenancy scoping middleware attaching tenant context in `backend/internal/tenancy/middleware.go`
+- [X] T063 [US4] Apply tenant filters across repositories in `backend/internal/tenancy/scoped_repository.go`
+- [X] T064 [US4] Create tenant scope violation templ feedback in `backend/internal/templ/errors/tenant_scope.templ`
 
 ---
 

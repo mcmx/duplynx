@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/mcmx/duplynx/internal/tenancy"
 )
 
@@ -20,8 +18,13 @@ func (h MachinesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tenantSlug := chi.URLParam(r, "tenantSlug")
-	machines, err := h.Repo.ListMachines(r.Context(), tenantSlug)
+	scope, ok := tenancy.ScopeFromContext(r.Context())
+	if !ok {
+		http.Error(w, "tenant scope missing", http.StatusBadRequest)
+		return
+	}
+
+	machines, err := h.Repo.ListMachines(r.Context(), scope.TenantSlug)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -29,8 +32,8 @@ func (h MachinesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	selectedID := r.URL.Query().Get("selected_machine")
 	if selectedID != "" {
-		if machine, err := h.Repo.FindMachine(r.Context(), tenantSlug, selectedID); err == nil {
-			h.Repo.LogMachineSelection(tenantSlug, machine)
+		if machine, err := h.Repo.FindMachine(r.Context(), scope.TenantSlug, selectedID); err == nil {
+			h.Repo.LogMachineSelection(scope.TenantSlug, machine)
 		}
 	}
 

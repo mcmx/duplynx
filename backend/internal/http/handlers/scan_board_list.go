@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/mcmx/duplynx/internal/scans"
+	"github.com/mcmx/duplynx/internal/tenancy"
 )
 
 // ScanListHandler lists scans for a tenant.
@@ -15,8 +14,14 @@ type ScanListHandler struct {
 }
 
 func (h ScanListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	tenantSlug := chi.URLParam(r, "tenantSlug")
-	scanSummaries, err := h.Service.ListTenantScans(r.Context(), tenantSlug)
+	scope, ok := tenancy.ScopeFromContext(r.Context())
+	if !ok {
+		http.Error(w, "tenant scope missing", http.StatusBadRequest)
+		return
+	}
+
+	scoped := tenancy.NewScopedRepository(scope, h.Service.Repo, nil)
+	scanSummaries, err := scoped.ListScans(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

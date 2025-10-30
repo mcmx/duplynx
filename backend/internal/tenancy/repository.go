@@ -85,3 +85,9 @@ func (r *Repository) LogMachineSelection(tenantSlug string, machine Machine) {
 func (r *Repository) Audit() *AuditLogger {
 	return r.audit
 }
+
+// Tenant returns a tenant by slug if it exists.
+func (r *Repository) Tenant(slug string) (Tenant, bool) {
+	tenant, ok := r.tenants[slug]
+	return tenant, ok
+}
