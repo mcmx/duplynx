@@ -1,3 +1,5 @@
+version: 2
+
 run:
   timeout: 5m
   tests: true
@@ -6,10 +8,8 @@ run:
 linters:
   enable:
     - errcheck
-    - gosimple
     - govet
     - staticcheck
-    - structcheck
     - unused
   disable:
     - exhaustruct

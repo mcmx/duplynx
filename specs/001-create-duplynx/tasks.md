@@ -145,13 +145,13 @@
 
 **Purpose**: Documentation, benchmarks, accessibility, and release readiness.
 
-- [ ] T065 Update quickstart instructions with final commands in `specs/001-create-duplynx/quickstart.md`
-- [ ] T066 Document SQLite writer constraints and deployment notes in `docs/duplynx-demo.md`
-- [ ] T067 Add board performance benchmark covering render latency in `tests/perf/board_bench_test.go`
-- [ ] T068 Run accessibility and contrast checks via Playwright axe audit in `tests/e2e/accessibility.spec.ts`
-- [ ] T069 Add final CI verification target for go test/playwright/perf combo with suite timing gates in `Makefile`
-- [ ] T070 Monitor CI e2e + integration runtime and fail when >8m in `.github/workflows/ci.yml`
-- [ ] T071 Document logging coverage for tenant/machine/action events in `docs/duplynx-demo.md`
+- [X] T065 Update quickstart instructions with final commands in `specs/001-create-duplynx/quickstart.md`
+- [X] T066 Document SQLite writer constraints and deployment notes in `docs/duplynx-demo.md`
+- [X] T067 Add board performance benchmark covering render latency in `tests/perf/board_bench_test.go`
+- [X] T068 Run accessibility and contrast checks via Playwright axe audit in `tests/e2e/accessibility.spec.ts`
+- [X] T069 Add final CI verification target for go test/playwright/perf combo with suite timing gates in `Makefile`
+- [X] T070 Monitor CI e2e + integration runtime and fail when >8m in `.github/workflows/ci.yml`
+- [X] T071 Document logging coverage for tenant/machine/action events in `docs/duplynx-demo.md`
 
 ---
 

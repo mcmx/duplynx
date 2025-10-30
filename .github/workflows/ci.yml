@@ -18,11 +18,5 @@ jobs:
         run: npx playwright install --with-deps
       - name: Go mod tidy
         run: make tidy
-      - name: Run lint
-        run: make lint
-      - name: Run unit/integration tests
-        run: make test
-      - name: Run e2e smoke
-        run: make e2e
-      - name: Run performance benchmarks
-        run: make perf
+      - name: Run full CI suite (8 minute budget)
+        run: make ci

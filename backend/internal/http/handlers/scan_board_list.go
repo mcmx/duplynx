@@ -28,7 +28,9 @@ func (h ScanListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(struct {
+	if err := json.NewEncoder(w).Encode(struct {
 		Scans []scans.ScanSummary `json:"scans"`
-	}{Scans: scanSummaries})
+	}{Scans: scanSummaries}); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+	}
 }
