@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Tenant holds the schema definition for the Tenant entity.
@@ -14,12 +15,9 @@ type Tenant struct {
 }
 
 func (Tenant) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		AuditMixin{},
-	}
+	return []ent.Mixin{mixin.Time{}}
 }
 
-// Fields of the Tenant.
 func (Tenant) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID { return uuid.New() }),
@@ -30,7 +28,6 @@ func (Tenant) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Tenant.
 func (Tenant) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("machines", Machine.Type),

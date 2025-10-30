@@ -16,7 +16,7 @@ type ScanListHandler struct {
 
 func (h ScanListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tenantSlug := chi.URLParam(r, "tenantSlug")
-	scans, err := h.Service.ListTenantScans(r.Context(), tenantSlug)
+	scanSummaries, err := h.Service.ListTenantScans(r.Context(), tenantSlug)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -25,5 +25,5 @@ func (h ScanListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(struct {
 		Scans []scans.ScanSummary `json:"scans"`
-	}{Scans: scans})
+	}{Scans: scanSummaries})
 }

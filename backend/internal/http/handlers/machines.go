@@ -27,8 +27,6 @@ func (h MachinesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.Repo.LogTenantSelection(tenantSlug)
-
 	selectedID := r.URL.Query().Get("selected_machine")
 	if selectedID != "" {
 		if machine, err := h.Repo.FindMachine(r.Context(), tenantSlug, selectedID); err == nil {

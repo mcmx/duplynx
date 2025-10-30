@@ -1,23 +1,22 @@
 package scans
 
-import (
-	"context"
-
-	"github.com/mcmx/duplynx/internal/scans"
-)
+import "context"
 
 // Service provides higher-level scan aggregation helpers.
 type Service struct {
-	ScansRepo *scans.Repository
+	Repo *Repository
 }
 
-func (s Service) ListTenantScans(ctx context.Context, tenantSlug string) ([]scans.ScanSummary, error) {
-	if s.ScansRepo == nil {
+func (s Service) ListTenantScans(ctx context.Context, tenantSlug string) ([]ScanSummary, error) {
+	if s.Repo == nil {
 		return nil, nil
 	}
-	return s.ScansRepo.ListByTenant(ctx, tenantSlug)
+	return s.Repo.ListByTenant(ctx, tenantSlug)
 }
 
-func (s Service) GetScan(ctx context.Context, scanID string) (scans.ScanSummary, error) {
-	return s.ScansRepo.Get(ctx, scanID)
+func (s Service) GetScan(ctx context.Context, scanID string) (ScanSummary, error) {
+	if s.Repo == nil {
+		return ScanSummary{}, ErrScanNotFound
+	}
+	return s.Repo.Get(ctx, scanID)
 }

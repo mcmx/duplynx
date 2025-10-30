@@ -15,7 +15,7 @@ import (
 // Dependencies encapsulates services required by HTTP handlers.
 type Dependencies struct {
 	TenancyRepo *tenancy.Repository
-	ScanService scans.Service
+	ScanRepo    *scans.Repository
 }
 
 // NewRouter wires baseline routes and middleware; handlers attach in feature phases.
@@ -43,13 +43,18 @@ func NewRouter(deps Dependencies) *chi.Mux {
 
 		tenantsHandler := handlers.TenantsHandler{Repo: deps.TenancyRepo}
 		machinesHandler := handlers.MachinesHandler{Repo: deps.TenancyRepo}
-		scanListHandler := handlers.ScanListHandler{Service: deps.ScanService}
-		scanBoardHandler := handlers.ScanBoardHandler{Service: deps.ScanService}
 
 		r.Get("/tenants", tenantsHandler.ServeHTTP)
 		r.Get("/tenants/{tenantSlug}/machines", machinesHandler.ServeHTTP)
-		r.Get("/tenants/{tenantSlug}/scans", scanListHandler.ServeHTTP)
-		r.Get("/scans/{scanID}", scanBoardHandler.ServeHTTP)
+
+		if deps.ScanRepo != nil {
+			service := scans.Service{Repo: deps.ScanRepo}
+			scanListHandler := handlers.ScanListHandler{Service: service}
+			scanBoardHandler := handlers.ScanBoardHandler{Service: service}
+
+			r.Get("/tenants/{tenantSlug}/scans", scanListHandler.ServeHTTP)
+			r.Get("/scans/{scanID}", scanBoardHandler.ServeHTTP)
+		}
 	}
 
 	return r

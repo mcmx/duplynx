@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Machine holds the schema definition for the Machine entity.
@@ -14,16 +15,13 @@ type Machine struct {
 }
 
 func (Machine) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		AuditMixin{},
-	}
+	return []ent.Mixin{mixin.Time{}}
 }
 
-// Fields of the Machine.
 func (Machine) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID { return uuid.New() }),
-		field.UUID("tenant_id", uuid.UUID{}).Optional(),
+		field.UUID("tenant_id", uuid.UUID{}).Immutable(),
 		field.String("name"),
 		field.Enum("category").Values("personal_laptop", "server"),
 		field.String("hostname").Optional(),
@@ -32,15 +30,12 @@ func (Machine) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Machine.
 func (Machine) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("tenant", Tenant.Type).
 			Ref("machines").
 			Field("tenant_id").
+			Required().
 			Unique(),
-		edge.To("initiated_scans", Scan.Type),
-		edge.To("keeper_groups", DuplicateGroup.Type),
-		edge.To("file_instances", FileInstance.Type),
 	}
 }
