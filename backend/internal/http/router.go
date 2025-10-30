@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/mcmx/duplynx/internal/actions"
 	"github.com/mcmx/duplynx/internal/http/handlers"
 	appmiddleware "github.com/mcmx/duplynx/internal/http/middleware"
 	"github.com/mcmx/duplynx/internal/scans"
@@ -14,8 +15,10 @@ import (
 
 // Dependencies encapsulates services required by HTTP handlers.
 type Dependencies struct {
-	TenancyRepo *tenancy.Repository
-	ScanRepo    *scans.Repository
+	TenancyRepo       *tenancy.Repository
+	ScanRepo          *scans.Repository
+	ActionsStore      *actions.Store
+	ActionsDispatcher actions.Dispatcher
 }
 
 // NewRouter wires baseline routes and middleware; handlers attach in feature phases.
@@ -54,6 +57,15 @@ func NewRouter(deps Dependencies) *chi.Mux {
 
 			r.Get("/tenants/{tenantSlug}/scans", scanListHandler.ServeHTTP)
 			r.Get("/scans/{scanID}", scanBoardHandler.ServeHTTP)
+		}
+
+		if deps.ActionsStore != nil {
+			keeperHandler := handlers.KeeperHandler{Dispatcher: deps.ActionsDispatcher}
+			actionHandler := handlers.ActionHandler{Dispatcher: deps.ActionsDispatcher}
+
+			r.Post("/duplicate-groups/{groupId}/keeper", keeperHandler.ServeHTTP)
+			r.Post("/duplicate-groups/{groupId}/actions", actionHandler.ServeHTTP)
+			r.Post("/duplicate-groups/{groupId}/htmx", handlers.ActionHTMXHandler)
 		}
 	}
 

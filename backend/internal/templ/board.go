@@ -6,13 +6,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/mcmx/duplynx/internal/actions"
 	"github.com/mcmx/duplynx/internal/scans"
 )
 
 var statusOrder = []string{"review", "action_needed", "resolved", "archived"}
 
 // BoardPage renders the board columns for a scan.
-func BoardPage(summary scans.ScanSummary, groups map[string][]scans.DuplicateGroupSummary) template.HTML {
+func BoardPage(summary scans.ScanSummary, groups map[string][]actions.DuplicateGroup) template.HTML {
 	var b strings.Builder
 	b.WriteString(`<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">`)
 
@@ -27,9 +28,15 @@ func BoardPage(summary scans.ScanSummary, groups map[string][]scans.DuplicateGro
 		list := groups[status]
 		sort.SliceStable(list, func(i, j int) bool { return list[i].Hash < list[j].Hash })
 		for _, group := range list {
+			var totalSize int64
+			for _, file := range group.Files {
+				totalSize += file.SizeBytes
+			}
+			fileCount := len(group.Files)
+
 			b.WriteString(`<li class="px-4 py-3">`)
 			b.WriteString(`<p class="font-mono text-xs text-slate-300">` + template.HTMLEscapeString(group.Hash) + `</p>`)
-			b.WriteString(`<p class="text-sm text-white">` + fmt.Sprintf("%d files • %d bytes", group.FileCount, group.TotalSizeBytes) + `</p>`)
+			b.WriteString(`<p class="text-sm text-white">` + fmt.Sprintf("%d files • %d bytes", fileCount, totalSize) + `</p>`)
 			b.WriteString(`</li>`)
 		}
 		b.WriteString(`</ul>`)

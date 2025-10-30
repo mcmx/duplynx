@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcmx/duplynx/internal/actions"
 	"github.com/mcmx/duplynx/internal/scans"
 	"github.com/mcmx/duplynx/internal/templ"
 )
@@ -23,7 +24,13 @@ func TestBoardPageRendersStatusCounts(t *testing.T) {
 			"archived":      1,
 		},
 	}
-	markup := templ.BoardPage(summary, map[string][]scans.DuplicateGroupSummary{})
+	groups := map[string][]actions.DuplicateGroup{
+		"review": {
+			{ID: "dg-001", TenantSlug: "sample-tenant-a", Hash: "hash-a1", Files: []actions.DuplicateFile{{MachineID: "ares-laptop", Path: "/file"}}},
+		},
+	}
+
+	markup := templ.BoardPage(summary, groups)
 	if len(markup) == 0 {
 		t.Fatalf("expected board markup to render content")
 	}
