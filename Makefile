@@ -17,7 +17,7 @@ tidy:
 
 .PHONY: ci
 ci:
-	@set -euo pipefail; \
+	@set -eu; \
 	start=$$(date +%s); \
 	$(MAKE) lint; \
 	$(MAKE) test; \
