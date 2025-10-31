@@ -8,4 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 )
 
-require github.com/a-h/templ v0.3.960 // indirect
+require (
+	github.com/a-h/templ v0.3.960 // indirect
+	github.com/stretchr/testify v1.10.0 // indirect
+)
