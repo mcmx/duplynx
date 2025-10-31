@@ -1,4 +1,4 @@
-version: 2
+version: "2"
 
 run:
   timeout: 5m
@@ -14,11 +14,10 @@ linters:
   disable:
     - exhaustruct
 
-linters-settings:
-  staticcheck:
-    checks: ["*"]
+  settings:
+    staticcheck:
+      checks: ["*"]
 
 issues:
-  exclude-use-default: false
   max-same-issues: 3
   max-issues-per-linter: 50
