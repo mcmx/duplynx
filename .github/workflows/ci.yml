@@ -1,0 +1,28 @@
+name: DupLynx CI
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.24"
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.5
+          working-directory: backend
+      - name: Go mod tidy
+        run: make tidy
+      - name: Run full CI suite (8 minute budget)
+        run: make ci
