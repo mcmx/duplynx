@@ -23,7 +23,7 @@ jobs:
           version: v2.5
           working-directory: backend
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run:  npm install --save-dev @axe-core/playwright
       - name: Go mod tidy
         run: make tidy
       - name: Run full CI suite (8 minute budget)
