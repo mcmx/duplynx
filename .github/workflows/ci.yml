@@ -21,6 +21,7 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.1
+          working-directory: backend
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Go mod tidy
