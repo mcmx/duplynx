@@ -2,7 +2,7 @@ name: DupLynx CI
 
 on:
   push:
-    branches: ["main", "001-create-duplynx"]
+    branches: ["*"]
   pull_request:
 
 jobs:
