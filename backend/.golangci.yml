@@ -3,7 +3,7 @@ version: "2"
 run:
   timeout: 5m
   tests: true
-  go: "1.22"
+  go: "1.24"
 
 linters:
   enable:
@@ -16,7 +16,6 @@ linters:
 
   settings:
     staticcheck:
-      checks: ["*"]
 
 issues:
   max-same-issues: 3
