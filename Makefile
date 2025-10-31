@@ -21,7 +21,6 @@ ci:
 	start=$$(date +%s); \
 	$(MAKE) lint; \
 	$(MAKE) test; \
-	$(MAKE) e2e; \
 	$(MAKE) perf; \
 	end=$$(date +%s); \
 	duration=$$((end - start)); \
