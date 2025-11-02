@@ -20,6 +20,7 @@ type Dependencies struct {
 	ScanRepo          *scans.Repository
 	ActionsStore      *actions.Store
 	ActionsDispatcher actions.Dispatcher
+	StaticFS          http.FileSystem
 }
 
 // NewRouter wires baseline routes and middleware; handlers attach in feature phases.
@@ -32,7 +33,11 @@ func NewRouter(deps Dependencies) *chi.Mux {
 		_, _ = w.Write([]byte("ok"))
 	})
 
-	r.Handle("/static/*", handlers.StaticHandler{Root: http.Dir("web/static")})
+	staticFS := deps.StaticFS
+	if staticFS == nil {
+		staticFS = http.Dir("web/static")
+	}
+	r.Handle("/static/*", handlers.StaticHandler{Root: staticFS})
 
 	if deps.TenancyRepo != nil {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {

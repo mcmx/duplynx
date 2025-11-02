@@ -21,7 +21,7 @@ func (Machine) Mixin() []ent.Mixin {
 func (Machine) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID { return uuid.New() }),
-		field.UUID("tenant_id", uuid.UUID{}).Immutable(),
+		field.UUID("tenant_id", uuid.UUID{}),
 		field.String("name"),
 		field.Enum("category").Values("personal_laptop", "server"),
 		field.String("hostname").Optional(),
@@ -37,5 +37,8 @@ func (Machine) Edges() []ent.Edge {
 			Field("tenant_id").
 			Required().
 			Unique(),
+		edge.To("keeper_groups", DuplicateGroup.Type),
+		edge.To("file_instances", FileInstance.Type),
+		edge.To("initiated_scans", Scan.Type),
 	}
 }

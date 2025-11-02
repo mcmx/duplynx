@@ -37,6 +37,9 @@ playwright-report/
 test-results/
 .npm-cache/
 
+# Local build caches
+/.cache/
+
 # Codex
 .codex/auth.json
 .codex/config.toml

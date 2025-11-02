@@ -23,8 +23,8 @@ func (ActionAudit) Mixin() []ent.Mixin {
 func (ActionAudit) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID { return uuid.New() }),
-		field.UUID("tenant_id", uuid.UUID{}).Immutable(),
-		field.UUID("duplicate_group_id", uuid.UUID{}).Immutable(),
+		field.UUID("tenant_id", uuid.UUID{}),
+		field.UUID("duplicate_group_id", uuid.UUID{}),
 		field.String("actor").Default("system"),
 		field.Enum("action_type").
 			Values("assign_keeper", "delete_copies", "create_hardlinks", "quarantine", "retry", "note"),

@@ -6,7 +6,7 @@ This document captures the operational expectations for the Create DupLynx demo 
 
 - **Ingestion writer**: run a single `duplynx` binary with `DUPLYNX_MODE=server` (default). This instance accepts signed ingestion payloads and performs all SQLite writes. Deploy it on a host with access to the shared database file, and expose the `/ingest` endpoints behind TLS plus any gateway auth you require.
 - **Read-only dashboard replicas**: additional `duplynx` binaries can serve the dashboard with `DUPLYNX_MODE=gui`. The config forces the SQLite DSN into `mode=ro`, guaranteeing these pods never take database write locks. Point them at the same database file via a shared volume (NFS, SMB, or container volume) and front them with a load balancer.
-- **Static assets**: the server serves Tailwind output from `backend/web/static/`. If you deploy from source, run `tailwindcss` ahead of time or set `--embed-static=false` and offload asset delivery to a CDN.
+- **Static assets**: the server serves the Tailwind bundle from `backend/web/dist/`. Run `npm run build:tailwind` ahead of time and mount the resulting directory read-only; there is no embedded or CDN fallback in this phase.
 
 ### SQLite Guidance
 
@@ -22,10 +22,9 @@ This document captures the operational expectations for the Create DupLynx demo 
 | Variable | Purpose | Example |
 | --- | --- | --- |
 | `DUPLYNX_DB_FILE` | Absolute path to the shared SQLite database. | `/var/lib/duplynx/duplynx.db` |
-| `DUPLYNX_ADDR` | HTTP bind address. | `:8080` |
-| `DUPLYNX_EMBED_STATIC` | Toggle embedded static assets. | `true` |
-| `DUPLYNX_MODE` | `server` (read/write) or `gui` (read-only dashboard). | `gui` |
-| `DUPLYNX_TENANT_SECRETS` | Comma-delimited `tenantSlug:hexSecret` pairs for HMAC validation. | `sample-tenant-a:deadbeef` |
+| `DUPLYNX_ASSETS_DIR` | Directory containing the built Tailwind bundle (`tailwind.css`). | `/var/lib/duplynx/assets` |
+| `DUPLYNX_ADDR` | HTTP bind address. | `0.0.0.0:8080` |
+| `DUPLYNX_LOG_LEVEL` | CLI log verbosity (`debug`, `info`, `warn`, `error`). | `info` |
 
 ## Logging Coverage
 

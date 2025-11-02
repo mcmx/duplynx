@@ -11,6 +11,7 @@
 npm install
 npm run build:tailwind   # produces backend/web/dist assets
 ```
+- Flags `--db-file` and `--assets-dir` default to `var/duplynx.db` and `backend/web/dist`; override via `DUPLYNX_DB_FILE` and `DUPLYNX_ASSETS_DIR` env vars. The `--log-level` flag defaults to `info` (`DUPLYNX_LOG_LEVEL`).
 
 ## Seed Demo Database
 ```bash
@@ -27,6 +28,14 @@ go run ./cmd/duplynx serve --db-file ../var/duplynx.db --assets-dir ./web/dist -
 ```
 - Wait for “HTTP server listening” message, then visit http://localhost:8080
 - Use tenant switcher to explore seeded machines, scans, and duplicate groups
+- You may also set `DUPLYNX_ADDR` to change the bind address without editing flags.
+
+## Measure Quickstart Timing
+```bash
+./scripts/measure_quickstart.sh --db-file var/duplynx.db --assets-dir backend/web/dist
+```
+- Records seed/serve durations, writes results to `var/duplynx_bench.json`, and prints timing summaries.
+- Script exits non-zero when budgets in the specification are exceeded.
 
 ## Run Smoke Verification
 ```bash

@@ -22,8 +22,8 @@ description: "Task list for DupLynx Server Runtime feature"
 
 **Purpose**: Establish baseline tooling and directories required by all user stories.
 
-- [ ] T001 Update Tailwind toolchain and add `build:tailwind` script targeting `backend/web/dist` in `package.json`
-- [ ] T002 Add tracked asset output directory placeholder at `backend/web/dist/.gitkeep`
+- [X] T001 Update Tailwind toolchain and add `build:tailwind` script targeting `backend/web/dist` in `package.json`
+- [X] T002 Add tracked asset output directory placeholder at `backend/web/dist/.gitkeep`
 
 ---
 
@@ -33,13 +33,13 @@ description: "Task list for DupLynx Server Runtime feature"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Replace the stub CLI entrypoint with Cobra root execution in `backend/cmd/duplynx/main.go`
-- [ ] T004 Create Cobra root command scaffolding with persistent config flags in `backend/cmd/duplynx/root.go`
-- [ ] T005 Implement runtime configuration schema with env/flag binding in `backend/internal/config/runtime.go`
-- [ ] T006 [P] Build SQLite connection and migration helper in `backend/internal/data/store.go`
-- [ ] T007 [P] Add static asset directory validation helper in `backend/internal/app/assets.go`
-- [ ] T008 [P] Introduce audit event writer utility for CLI commands in `backend/internal/observability/audit.go`
-- [ ] T009 Construct reusable HTTP server builder that wires Chi router and middleware in `backend/internal/app/server.go`
+- [X] T003 Replace the stub CLI entrypoint with Cobra root execution in `backend/cmd/duplynx/main.go`
+- [X] T004 Create Cobra root command scaffolding with persistent config flags in `backend/cmd/duplynx/root.go`
+- [X] T005 Implement runtime configuration schema with env/flag binding in `backend/internal/config/runtime.go`
+- [X] T006 [P] Build SQLite connection and migration helper in `backend/internal/data/store.go`
+- [X] T007 [P] Add static asset directory validation helper in `backend/internal/app/assets.go`
+- [X] T008 [P] Introduce audit event writer utility for CLI commands in `backend/internal/observability/audit.go`
+- [X] T009 Construct reusable HTTP server builder that wires Chi router and middleware in `backend/internal/app/server.go`
 
 **Checkpoint**: Configuration, database, audit, and server scaffolding ready — user story implementation can now begin.
 
@@ -53,16 +53,16 @@ description: "Task list for DupLynx Server Runtime feature"
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T010 [P] [US1] Create integration test covering serve command failure modes in `tests/integration/server/serve_config_validation_test.go`
+- [X] T010 [P] [US1] Create integration test covering serve command failure modes in `tests/integration/server/serve_config_validation_test.go`
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement `serve` subcommand to bootstrap config, DB, and HTTP server in `backend/cmd/duplynx/serve.go`
-- [ ] T012 [P] [US1] Refactor tenancy repository to query tenants and machines via Ent client in `backend/internal/tenancy/repository.go`
-- [ ] T013 [P] [US1] Refactor scans repository to query scan summaries via Ent client in `backend/internal/scans/repository.go`
-- [ ] T014 [P] [US1] Update HTTP router to mount disk-backed static assets and ent-powered handlers in `backend/internal/http/router.go`
-- [ ] T015 [US1] Emit audit events for server start/stop lifecycle in `backend/cmd/duplynx/serve.go`
-- [ ] T016 [US1] Document `duplynx serve` usage and flags in `docs/duplynx-demo.md`
+- [X] T011 [US1] Implement `serve` subcommand to bootstrap config, DB, and HTTP server in `backend/cmd/duplynx/serve.go`
+- [X] T012 [P] [US1] Refactor tenancy repository to query tenants and machines via Ent client in `backend/internal/tenancy/repository.go`
+- [X] T013 [P] [US1] Refactor scans repository to query scan summaries via Ent client in `backend/internal/scans/repository.go`
+- [X] T014 [P] [US1] Update HTTP router to mount disk-backed static assets and ent-powered handlers in `backend/internal/http/router.go`
+- [X] T015 [US1] Emit audit events for server start/stop lifecycle in `backend/cmd/duplynx/serve.go`
+- [X] T016 [US1] Document `duplynx serve` usage and flags in `docs/duplynx-demo.md`
 
 **Checkpoint**: Launch command serves templ views using database data and respects asset gating.
 
