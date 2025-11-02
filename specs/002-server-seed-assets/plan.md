@@ -12,7 +12,7 @@ Deliver a production-like DupLynx CLI that offers `serve` and `seed` commands, r
 **Language/Version**: Go 1.22  
 **Primary Dependencies**: Chi router, Ent ORM, templ view engine, TailwindCSS build artifacts, Cobra-style CLI scaffolding  
 **Storage**: SQLite demo database file on local disk (`var/duplynx.db`)  
-**Testing**: `go test` suites (unit/integration), Playwright onboarding tests, contract/integration suites, new HTTP smoke test for `/`, automated timing assertions for seed/serve workflows  
+**Testing**: `go test` suites (unit/integration), Playwright onboarding tests, contract/integration suites, new HTTP smoke test for `/`, automated timing assertions for seed/serve workflows, quickstart timing script (`scripts/measure_quickstart.sh`)  
 **Target Platform**: Localhost server on Linux/macOS (bind `0.0.0.0:8080`)  
 **Project Type**: Backend CLI-managed web server with server-rendered UI  
 **Performance Goals**: Seed workflow <60s; dashboard available <5 minutes from kickoff; root route loads <2s on standard dev hardware  

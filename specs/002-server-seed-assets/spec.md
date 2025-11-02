@@ -99,7 +99,7 @@ A release engineer wants automated checks that ensure the seeded server responds
 
 ### Measurable Outcomes
 
-- **SC-001**: On the standard DupLynx developer workstation (Apple M2, 16 GB RAM, SSD), evaluators complete the documented seed and serve workflow and view the dashboard with demo data in under 5 minutes, as recorded by the automated quickstart timing script.
+- **SC-001**: On the standard DupLynx developer workstation (Apple M2, 16 GB RAM, SSD), evaluators complete the documented seed and serve workflow and view the dashboard with demo data in under 5 minutes, as recorded by the automated quickstart timing script located at `scripts/measure_quickstart.sh`.
 - **SC-002**: The seeding command populates the full demo dataset in under 60 seconds on the standard workstation, with each run logging its measured duration into the audit event stream.
 - **SC-003**: CI pipelines complete the new automated smoke test suite with zero manual intervention, capturing seed and serve durations in the job logs, and block releases on failure.
 - **SC-004**: Onboarding support requests related to starting DupLynx locally decrease by at least 50% within one release cycle compared to the baseline volume captured in the pre-release support log, with progress noted in the release summary.

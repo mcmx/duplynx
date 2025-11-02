@@ -148,6 +148,7 @@ description: "Task list for DupLynx Server Runtime feature"
 - [ ] T033 Run `go fmt` and `golangci-lint` over new packages in `backend/internal/...`
 - [ ] T034 Verify quickstart instructions by executing documented flow, recording timing output, and capturing notes in `docs/duplynx-demo.md`
 - [ ] T035 Document onboarding support baseline and tracking plan for SC-004 in `docs/duplynx-demo.md`
+- [ ] T036 Create automated quickstart timing script in `scripts/measure_quickstart.sh` and document usage in `docs/duplynx-demo.md`
 
 ---
 
