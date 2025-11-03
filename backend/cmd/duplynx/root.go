@@ -34,7 +34,10 @@ func newRootCommand() *cobra.Command {
 
 	config.BindRuntimeFlags(cmd.PersistentFlags(), &runtimeCfg)
 
-	cmd.AddCommand(newServeCommand())
+	cmd.AddCommand(
+		newServeCommand(),
+		newSeedCommand(),
+	)
 
 	cmd.SetContext(context.Background())
 	return cmd

@@ -39,20 +39,58 @@ DupLynx currently emits the following structured audit entries:
 
 Forward these logs to your observability stack (stdout collectors, Loki, etc.) to reconstruct user flows and prove tenant isolation. When running multiple GUI replicas, ensure each pod streams logs centrally so audit trails remain contiguous.
 
+## Seeding Workflow
+
+The `duplynx seed` command rebuilds the demo database with a deterministic dataset of tenants, machines, scans, duplicate groups, file instances, and historical duplicate actions.
+
+```bash
+cd backend
+go run ./cmd/duplynx seed \
+  --db-file ../var/duplynx.db \
+  --assets-dir ./web/dist
+```
+
+- The command drops existing demo tables, reapplies Ent migrations, and writes the canonical fixtures.
+- Every execution emits `seed_start` and `seed_stop` audit events with actor metadata so CI and onboarding scripts can verify success.
+- The operation is idempotent: rerunning the command produces identical records, making it safe for CI and local refreshes.
+- `--db-file` and `--assets-dir` accept either absolute paths or paths relative to the repository root. Environment overrides follow the same flag names (e.g., `DUPLYNX_DB_FILE`).
+
+If the Tailwind bundle is missing, rebuild it before seeding:
+
+```bash
+npm install
+npm run build:tailwind
+```
+
 ## Demo Checklist
 
-1. Run the seed command to populate tenants, machines, scans, and duplicate groups:  
+1. Build static assets (required once per change):  
    ```bash
-   go run ./cmd/duplynx seed --db-file var/duplynx.db
+   npm install
+   npm run build:tailwind
    ```
-2. Start the ingestion writer:  
+2. Seed the canonical dataset (idempotent):  
    ```bash
-   DUPLYNX_MODE=server DUPLYNX_TENANT_SECRETS=sample-tenant-a:deadbeef \
-   go run ./cmd/duplynx serve --db-file var/duplynx.db --addr :8080
+   cd backend
+   go run ./cmd/duplynx seed \
+     --db-file ../var/duplynx.db \
+     --assets-dir ./web/dist
    ```
-3. (Optional) Launch a read-only dashboard replica:  
+3. Start the demo server for evaluators:  
    ```bash
-   DUPLYNX_MODE=gui go run ./cmd/duplynx serve --db-file var/duplynx.db --addr :8081
+   cd backend
+   go run ./cmd/duplynx serve \
+     --db-file ../var/duplynx.db \
+     --assets-dir ./web/dist \
+     --addr 0.0.0.0:8080
    ```
-4. Configure your load balancer to direct ingestion traffic to the writer and dashboard traffic to GUI replicas.
-5. Tail logs to verify tenant selection and keeper/action audit events while demoing.
+4. Validate the end-to-end flow with the automated smoke test (fails fast on missing Tailwind bundle or slow start-ups):  
+   ```bash
+   make smoke-demo
+   ```
+5. (Optional) Launch additional read-only replicas by repeating the serve command on different ports and pointing them at the same database file in read-only mode.
+6. Monitor stdout for audit entries (`seed_*`, `serve_*`, tenant selection, keeper assignments) to verify healthy flows during demos.
+
+## CI Integration
+
+The GitHub Actions workflow runs `make ci` followed by `make smoke-demo` on every push and pull request. The smoke target enforces a five-minute ceiling for the seed/serve cycle and asserts that the rendered dashboard links the Tailwind bundle, preventing regressions that would break evaluator onboarding.

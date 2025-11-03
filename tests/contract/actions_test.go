@@ -2,42 +2,64 @@ package contract_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/mcmx/duplynx/ent/enttest"
+	"github.com/mcmx/duplynx/internal/actions"
+	"github.com/mcmx/duplynx/internal/data"
 	apphttp "github.com/mcmx/duplynx/internal/http"
 	"github.com/mcmx/duplynx/internal/scans"
 	"github.com/mcmx/duplynx/internal/tenancy"
-	"github.com/mcmx/duplynx/internal/actions"
 )
 
-func setupActionsRouter() (*httptest.Server, *actions.AuditLogger) {
+func setupActionsRouter(t *testing.T) (*httptest.Server, *actions.AuditLogger, data.DemoDataset) {
+	t.Helper()
+
 	audit := &actions.AuditLogger{}
-	store := actions.NewStore(actions.SampleDuplicateGroups())
+	client := enttest.Open(t, "sqlite3", "file:actions-contract?mode=memory&cache=shared&_fk=1")
+
+	dataset := data.CanonicalDemoDataset()
+	if _, err := data.SeedDemoDataset(context.Background(), client, dataset); err != nil {
+		t.Fatalf("failed to seed dataset: %v", err)
+	}
+
+	store := actions.NewStore(dataset.DuplicateGroupsForStore())
 	dispatcher := actions.Dispatcher{Store: store, Audit: audit}
-	repo := tenancy.NewRepository(tenancy.SampleTenants(), &tenancy.AuditLogger{})
-	scanRepo := scans.NewRepository(scans.SampleScans())
+	repo := tenancy.NewRepositoryFromClient(client, &tenancy.AuditLogger{})
+	scanRepo := scans.NewRepositoryFromClient(client)
 	router := apphttp.NewRouter(apphttp.Dependencies{
 		TenancyRepo:       repo,
 		ScanRepo:          scanRepo,
 		ActionsStore:      store,
 		ActionsDispatcher: dispatcher,
 	})
-	return httptest.NewServer(router), audit
+
+	server := httptest.NewServer(router)
+	t.Cleanup(func() {
+		server.Close()
+		_ = client.Close()
+	})
+
+	return server, audit, dataset
 }
 
 func TestAssignKeeperContract(t *testing.T) {
-	ts, audit := setupActionsRouter()
-	defer ts.Close()
+	ts, audit, dataset := setupActionsRouter(t)
+
+	tenantSlug := dataset.Tenants[0].Slug
+	groupID := dataset.DuplicateGroups[0].ID.String()
+	keeperMachineID := dataset.Machines[1].ID.String()
 
 	payload := map[string]any{
-		"tenantSlug":      "sample-tenant-a",
-		"keeperMachineId": "helios-02",
+		"tenantSlug":      tenantSlug,
+		"keeperMachineId": keeperMachineID,
 	}
 	body, _ := json.Marshal(payload)
-	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/duplicate-groups/dg-001/keeper", bytes.NewReader(body))
+	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/duplicate-groups/"+groupID+"/keeper", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
@@ -57,16 +79,29 @@ func TestAssignKeeperContract(t *testing.T) {
 }
 
 func TestActionEndpointContract(t *testing.T) {
-	ts, audit := setupActionsRouter()
-	defer ts.Close()
+	ts, audit, dataset := setupActionsRouter(t)
+
+	tenantSlug := dataset.Tenants[0].Slug
+	groupID := dataset.DuplicateGroups[1].ID.String()
+
+	var fileID string
+	for _, file := range dataset.FileInstances {
+		if file.DuplicateGroupID.String() == groupID {
+			fileID = file.ID.String()
+			break
+		}
+	}
+	if fileID == "" {
+		t.Fatalf("expected file instance for group %s", groupID)
+	}
 
 	payload := map[string]any{
-		"tenantSlug":    "sample-tenant-a",
+		"tenantSlug":    tenantSlug,
 		"actionType":    "quarantine",
-		"targetFileIds": []string{"f1"},
+		"targetFileIds": []string{fileID},
 	}
 	body, _ := json.Marshal(payload)
-	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/duplicate-groups/dg-001/actions", bytes.NewReader(body))
+	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/duplicate-groups/"+groupID+"/actions", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)

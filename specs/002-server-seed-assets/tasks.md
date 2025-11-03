@@ -85,18 +85,18 @@ description: "Task list for DupLynx Server Runtime feature"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T017 [P] [US2] Add integration test validating seeded tenants and machines in `tests/integration/seeding/seed_demo_dataset_test.go`
-- [ ] T018 [P] [US2] Add unit test ensuring seed audit events capture actor/outcome in `tests/unit/observability/seed_audit_test.go`
+- [X] T017 [P] [US2] Add integration test validating seeded tenants and machines in `tests/integration/seeding/seed_demo_dataset_test.go`
+- [X] T018 [P] [US2] Add unit test ensuring seed audit events capture actor/outcome in `tests/unit/observability/seed_audit_test.go`
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Define canonical demo dataset builders for tenants, machines, scans, and groups in `backend/internal/data/demo.go`
-- [ ] T020 [P] [US2] Implement deterministic reseed workflow that drops and re-applies schema in `backend/internal/data/seed.go`
-- [ ] T021 [P] [US2] Register `seed` subcommand with Cobra root in `backend/cmd/duplynx/root.go`
-- [ ] T022 [P] [US2] Extend seed command to emit audit events and duration metrics in `backend/cmd/duplynx/seed.go`
-- [ ] T023 [US2] Replace in-memory demo fixtures with database-backed helpers in `tests/integration/tenant_guard_test.go`
-- [ ] T024 [P] [US2] Update contract tests to initialize seeded database fixtures in `tests/contract/actions_test.go`
-- [ ] T025 [US2] Update documentation with `duplynx seed` workflow in `docs/duplynx-demo.md`
+- [X] T019 [US2] Define canonical demo dataset builders for tenants, machines, scans, and groups in `backend/internal/data/demo.go`
+- [X] T020 [P] [US2] Implement deterministic reseed workflow that drops and re-applies schema in `backend/internal/data/seed.go`
+- [X] T021 [P] [US2] Register `seed` subcommand with Cobra root in `backend/cmd/duplynx/root.go`
+- [X] T022 [P] [US2] Extend seed command to emit audit events and duration metrics in `backend/cmd/duplynx/seed.go`
+- [X] T023 [US2] Replace in-memory demo fixtures with database-backed helpers in `tests/integration/tenant_guard_test.go`
+- [X] T024 [P] [US2] Update contract tests to initialize seeded database fixtures in `tests/contract/actions_test.go`
+- [X] T025 [US2] Update documentation with `duplynx seed` workflow in `docs/duplynx-demo.md`
 
 **Checkpoint**: Seed command recreates demo data deterministically and all tests exercise database-backed fixtures.
 
@@ -119,14 +119,14 @@ description: "Task list for DupLynx Server Runtime feature"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T026 [P] [US3] Create Go-based smoke test that seeds, serves, probes `/`, and asserts timing budgets in `tests/smoke/server_smoke_test.go`
-- [ ] T027 [P] [US3] Update Playwright onboarding spec to consume seeded data in `tests/e2e/onboarding.spec.ts`
+- [X] T026 [P] [US3] Create Go-based smoke test that seeds, serves, probes `/`, and asserts timing budgets in `tests/smoke/server_smoke_test.go`
+- [X] T027 [P] [US3] Update Playwright onboarding spec to consume seeded data in `tests/e2e/onboarding.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Add `smoke-demo` target chaining seed and serve verification with timing log output in `Makefile`
-- [ ] T029 [P] [US3] Update CI workflow to call smoke target after `make ci` and surface timing metrics in `.github/workflows/ci.yml`
-- [ ] T030 [US3] Document smoke test invocation and CI expectations in `docs/duplynx-demo.md`
+- [X] T028 [US3] Add `smoke-demo` target chaining seed and serve verification with timing log output in `Makefile`
+- [X] T029 [P] [US3] Update CI workflow to call smoke target after `make ci` and surface timing metrics in `.github/workflows/ci.yml`
+- [X] T030 [US3] Document smoke test invocation and CI expectations in `docs/duplynx-demo.md`
 
 **Checkpoint**: CI executes smoke tests automatically and documentation guides engineers through verification.
 

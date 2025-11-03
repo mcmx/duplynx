@@ -1,4 +1,4 @@
-.PHONY: lint test e2e perf tidy ci
+.PHONY: lint test e2e perf tidy smoke-demo ci
 
 lint:
 	cd backend && golangci-lint run ./...
@@ -14,6 +14,19 @@ perf:
 
 tidy:
 	cd backend && go mod tidy
+
+.PHONY: smoke-demo
+smoke-demo:
+	@set -eu; \
+	start=$$(date +%s); \
+	go test ./tests/smoke -count=1; \
+	end=$$(date +%s); \
+	duration=$$((end - start)); \
+	echo "Smoke demo verified in $$duration seconds"; \
+	if [ $$duration -gt 300 ]; then \
+		echo "Smoke demo exceeded 300 second budget"; \
+		exit 1; \
+	fi
 
 .PHONY: ci
 ci:
