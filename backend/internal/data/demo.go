@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-
-	"github.com/mcmx/duplynx/internal/actions"
 )
 
 // DemoDataset captures the canonical demo records for the seed workflow.
@@ -123,48 +121,6 @@ func (d DemoDataset) Clone() DemoDataset {
 		}
 	}
 	return clone
-}
-
-// DuplicateGroupsForStore converts duplicate group fixtures into in-memory action store records.
-func (d DemoDataset) DuplicateGroupsForStore() []actions.DuplicateGroup {
-	filesByGroup := make(map[uuid.UUID][]FileInstanceFixture)
-	for _, file := range d.FileInstances {
-		filesByGroup[file.DuplicateGroupID] = append(filesByGroup[file.DuplicateGroupID], file)
-	}
-
-	out := make([]actions.DuplicateGroup, 0, len(d.DuplicateGroups))
-	for _, group := range d.DuplicateGroups {
-		files := filesByGroup[group.ID]
-		storeFiles := make([]actions.DuplicateFile, 0, len(files))
-		for _, file := range files {
-			storeFiles = append(storeFiles, actions.DuplicateFile{
-				ID:          file.ID.String(),
-				MachineID:   file.MachineID.String(),
-				Path:        file.Path,
-				SizeBytes:   file.SizeBytes,
-				Quarantined: file.Quarantined,
-			})
-		}
-		out = append(out, actions.DuplicateGroup{
-			ID:              group.ID.String(),
-			ScanID:          group.ScanID.String(),
-			TenantSlug:      tenantSlugByID(group.TenantID, d.Tenants),
-			Status:          group.Status,
-			KeeperMachineID: group.KeeperMachineID.String(),
-			Hash:            group.Hash,
-			Files:           storeFiles,
-		})
-	}
-	return out
-}
-
-func tenantSlugByID(id uuid.UUID, tenants []TenantFixture) string {
-	for _, tenant := range tenants {
-		if tenant.ID == id {
-			return tenant.Slug
-		}
-	}
-	return ""
 }
 
 var (

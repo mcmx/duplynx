@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -12,7 +13,7 @@ import (
 
 // KeeperHandler assigns a keeper machine to a duplicate group.
 type KeeperHandler struct {
-	Dispatcher actions.Dispatcher
+	Dispatcher *actions.Dispatcher
 }
 
 type keeperRequest struct {
@@ -21,6 +22,11 @@ type keeperRequest struct {
 }
 
 func (h KeeperHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if h.Dispatcher == nil {
+		http.Error(w, "actions dispatcher unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
 	var req keeperRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
@@ -37,8 +43,9 @@ func (h KeeperHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	tenantSlug := scope.TenantSlug
 	groupID := chi.URLParam(r, "groupId")
-	if err := h.Dispatcher.AssignKeeper(groupID, tenantSlug, req.KeeperMachineID); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := h.Dispatcher.AssignKeeper(r.Context(), groupID, tenantSlug, req.KeeperMachineID); err != nil {
+		status := statusFromActionsError(err)
+		http.Error(w, err.Error(), status)
 		return
 	}
 
@@ -53,7 +60,7 @@ func (h KeeperHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // ActionHandler triggers duplicate management actions (delete, hardlink, quarantine).
 type ActionHandler struct {
-	Dispatcher actions.Dispatcher
+	Dispatcher *actions.Dispatcher
 }
 
 type actionRequest struct {
@@ -64,6 +71,11 @@ type actionRequest struct {
 }
 
 func (h ActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if h.Dispatcher == nil {
+		http.Error(w, "actions dispatcher unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
 	var req actionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
@@ -87,8 +99,9 @@ func (h ActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"targetFileIds": req.TargetFileIDs,
 		"notes":         req.Notes,
 	}
-	if err := h.Dispatcher.PerformAction(groupID, scope.TenantSlug, "system", req.ActionType, payload); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := h.Dispatcher.PerformAction(r.Context(), groupID, scope.TenantSlug, "system", req.ActionType, payload); err != nil {
+		status := statusFromActionsError(err)
+		http.Error(w, err.Error(), status)
 		return
 	}
 
@@ -99,5 +112,18 @@ func (h ActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"message": "action queued",
 	}); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+	}
+}
+
+func statusFromActionsError(err error) int {
+	switch {
+	case errors.Is(err, actions.ErrGroupNotFound):
+		return http.StatusNotFound
+	case errors.Is(err, actions.ErrKeeperMachineID),
+		errors.Is(err, actions.ErrInvalidGroupID),
+		errors.Is(err, actions.ErrInvalidMachineID):
+		return http.StatusBadRequest
+	default:
+		return http.StatusInternalServerError
 	}
 }

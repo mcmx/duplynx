@@ -79,14 +79,16 @@ func runSeed(cmd *cobra.Command, _ []string) (err error) {
 	metadata["scans"] = report.Scans
 	metadata["duplicate_groups"] = report.DuplicateGroups
 
-	fmt.Fprintf(cmd.OutOrStdout(),
+	if _, printErr := fmt.Fprintf(cmd.OutOrStdout(),
 		"Seeded %d tenants, %d machines, %d scans, %d duplicate groups, and %d file instances\n",
 		report.Tenants,
 		report.Machines,
 		report.Scans,
 		report.DuplicateGroups,
 		report.FileInstances,
-	)
+	); printErr != nil {
+		return printErr
+	}
 
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/mcmx/duplynx/internal/actions"
 	"github.com/mcmx/duplynx/internal/app"
 	"github.com/mcmx/duplynx/internal/config"
 	"github.com/mcmx/duplynx/internal/data"
@@ -90,13 +91,17 @@ func runServe(cmd *cobra.Command, _ []string) (err error) {
 
 	tenancyRepo := tenancy.NewRepositoryFromClient(client, &tenancy.AuditLogger{})
 	scanRepo := scans.NewRepositoryFromClient(client)
+	actionsRepo := actions.NewRepositoryFromClient(client)
+	dispatcher := actions.NewDispatcher(actionsRepo, &actions.AuditLogger{})
 
 	server := app.NewHTTPServer(app.ServerOptions{
 		Addr: cfg.Addr,
 		Handler: apphttp.NewRouter(apphttp.Dependencies{
-			TenancyRepo: tenancyRepo,
-			ScanRepo:    scanRepo,
-			StaticFS:    http.Dir(cfg.AssetsDir),
+			TenancyRepo:       tenancyRepo,
+			ScanRepo:          scanRepo,
+			ActionsRepo:       actionsRepo,
+			ActionsDispatcher: dispatcher,
+			StaticFS:          http.Dir(cfg.AssetsDir),
 		}),
 	})
 

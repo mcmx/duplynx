@@ -5,16 +5,26 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mcmx/duplynx/internal/http"
+	apphttp "github.com/mcmx/duplynx/internal/http"
 	"github.com/mcmx/duplynx/internal/tenancy"
+	"github.com/mcmx/duplynx/tests/testutil"
 )
 
 func TestMachineSelectionLogging(t *testing.T) {
+	seed := testutil.NewSeededClient(t)
 	audit := &tenancy.AuditLogger{}
-	repo := tenancy.NewRepository(tenancy.SampleTenants(), audit)
-	router := http.NewRouter(http.Dependencies{TenancyRepo: repo})
+	repo := tenancy.NewRepositoryFromClient(seed.Client, audit)
+	router := apphttp.NewRouter(apphttp.Dependencies{TenancyRepo: repo})
 
-	req := httptest.NewRequest(http.MethodGet, "/tenants/sample-tenant-a/machines?selected_machine=ares-laptop", nil)
+	tenantSlug := seed.Dataset.Tenants[0].Slug
+	machines := testutil.MachineIDsForTenant(seed.Dataset, seed.Dataset.Tenants[0].ID)
+	if len(machines) == 0 {
+		t.Fatalf("expected machines for tenant %s", tenantSlug)
+	}
+	selected := machines[0].String()
+
+	req := httptest.NewRequest(http.MethodGet, "/tenants/"+tenantSlug+"/machines?selected_machine="+selected, nil)
+	req.Header.Set(tenancy.HeaderTenantSlug, tenantSlug)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -22,7 +32,7 @@ func TestMachineSelectionLogging(t *testing.T) {
 	entries := audit.Entries()
 	var machineLogged bool
 	for _, entry := range entries {
-		if entry.Type == "machine_selection" && entry.MachineID == "ares-laptop" {
+		if entry.Type == "machine_selection" && entry.MachineID == selected {
 			machineLogged = true
 			break
 		}

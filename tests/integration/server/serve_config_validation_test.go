@@ -9,7 +9,7 @@ import (
 )
 
 func TestServeFailsWhenAssetsMissing(t *testing.T) {
-	repoRoot, err := filepath.Abs(".")
+	repoRoot, err := filepath.Abs("../../..")
 	if err != nil {
 		t.Fatalf("failed to determine repo root: %v", err)
 	}

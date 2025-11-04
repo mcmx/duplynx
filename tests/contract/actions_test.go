@@ -8,120 +8,134 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mcmx/duplynx/ent/enttest"
 	"github.com/mcmx/duplynx/internal/actions"
-	"github.com/mcmx/duplynx/internal/data"
 	apphttp "github.com/mcmx/duplynx/internal/http"
 	"github.com/mcmx/duplynx/internal/scans"
 	"github.com/mcmx/duplynx/internal/tenancy"
+	"github.com/mcmx/duplynx/tests/testutil"
 )
 
-func setupActionsRouter(t *testing.T) (*httptest.Server, *actions.AuditLogger, data.DemoDataset) {
+type actionsHarness struct {
+	server  *httptest.Server
+	audit   *actions.AuditLogger
+	dataset testutil.SeededClient
+	repo    *actions.Repository
+}
+
+func setupActionsRouter(t *testing.T) actionsHarness {
 	t.Helper()
 
+	seed := testutil.NewSeededClient(t)
 	audit := &actions.AuditLogger{}
-	client := enttest.Open(t, "sqlite3", "file:actions-contract?mode=memory&cache=shared&_fk=1")
+	actionsRepo := actions.NewRepositoryFromClient(seed.Client)
+	dispatcher := actions.NewDispatcher(actionsRepo, audit)
 
-	dataset := data.CanonicalDemoDataset()
-	if _, err := data.SeedDemoDataset(context.Background(), client, dataset); err != nil {
-		t.Fatalf("failed to seed dataset: %v", err)
-	}
-
-	store := actions.NewStore(dataset.DuplicateGroupsForStore())
-	dispatcher := actions.Dispatcher{Store: store, Audit: audit}
-	repo := tenancy.NewRepositoryFromClient(client, &tenancy.AuditLogger{})
-	scanRepo := scans.NewRepositoryFromClient(client)
 	router := apphttp.NewRouter(apphttp.Dependencies{
-		TenancyRepo:       repo,
-		ScanRepo:          scanRepo,
-		ActionsStore:      store,
+		TenancyRepo:       tenancy.NewRepositoryFromClient(seed.Client, &tenancy.AuditLogger{}),
+		ScanRepo:          scans.NewRepositoryFromClient(seed.Client),
+		ActionsRepo:       actionsRepo,
 		ActionsDispatcher: dispatcher,
 	})
 
 	server := httptest.NewServer(router)
-	t.Cleanup(func() {
-		server.Close()
-		_ = client.Close()
-	})
+	t.Cleanup(server.Close)
 
-	return server, audit, dataset
+	return actionsHarness{
+		server:  server,
+		audit:   audit,
+		dataset: seed,
+		repo:    actionsRepo,
+	}
 }
 
 func TestAssignKeeperContract(t *testing.T) {
-	ts, audit, dataset := setupActionsRouter(t)
+	harness := setupActionsRouter(t)
 
-	tenantSlug := dataset.Tenants[0].Slug
-	groupID := dataset.DuplicateGroups[0].ID.String()
-	keeperMachineID := dataset.Machines[1].ID.String()
+	group := harness.dataset.Dataset.DuplicateGroups[0]
+	groupID := group.ID.String()
+	tenantSlug := testutil.TenantSlugFor(t, harness.dataset.Dataset, group.TenantID)
+	machines := testutil.MachineIDsForTenant(harness.dataset.Dataset, group.TenantID)
+	if len(machines) < 2 {
+		t.Fatalf("expected at least two machines for tenant %s", tenantSlug)
+	}
+	keeperMachineID := machines[1].String()
 
 	payload := map[string]any{
 		"tenantSlug":      tenantSlug,
 		"keeperMachineId": keeperMachineID,
 	}
 	body, _ := json.Marshal(payload)
-	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/duplicate-groups/"+groupID+"/keeper", bytes.NewReader(body))
+	req, _ := http.NewRequest(http.MethodPost, harness.server.URL+"/duplicate-groups/"+groupID+"/keeper", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(tenancy.HeaderTenantSlug, tenantSlug)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatalf("request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	t.Cleanup(func() { _ = resp.Body.Close() })
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
 
-	entries := audit.Entries()
-	if len(entries) == 0 || entries[0].Type != "assign_keeper" {
-		t.Fatalf("expected assign_keeper audit entry, got %#v", entries)
+	if len(harness.audit.Entries()) == 0 || harness.audit.Entries()[0].Type != "assign_keeper" {
+		t.Fatalf("expected assign_keeper audit entry, got %#v", harness.audit.Entries())
+	}
+
+	updated, err := harness.repo.Get(context.Background(), group.ID)
+	if err != nil {
+		t.Fatalf("reload duplicate group: %v", err)
+	}
+	if updated.KeeperMachineID != keeperMachineID {
+		t.Fatalf("keeper machine not updated: %s", updated.KeeperMachineID)
 	}
 }
 
 func TestActionEndpointContract(t *testing.T) {
-	ts, audit, dataset := setupActionsRouter(t)
+	harness := setupActionsRouter(t)
 
-	tenantSlug := dataset.Tenants[0].Slug
-	groupID := dataset.DuplicateGroups[1].ID.String()
-
-	var fileID string
-	for _, file := range dataset.FileInstances {
-		if file.DuplicateGroupID.String() == groupID {
-			fileID = file.ID.String()
-			break
-		}
-	}
-	if fileID == "" {
-		t.Fatalf("expected file instance for group %s", groupID)
-	}
+	group := harness.dataset.Dataset.DuplicateGroups[1]
+	groupID := group.ID.String()
+	tenantSlug := testutil.TenantSlugFor(t, harness.dataset.Dataset, group.TenantID)
 
 	payload := map[string]any{
 		"tenantSlug":    tenantSlug,
-		"actionType":    "quarantine",
-		"targetFileIds": []string{fileID},
+		"actionType":    string(actions.ActionQuarantine),
+		"targetFileIds": []string{},
 	}
 	body, _ := json.Marshal(payload)
-	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/duplicate-groups/"+groupID+"/actions", bytes.NewReader(body))
+	req, _ := http.NewRequest(http.MethodPost, harness.server.URL+"/duplicate-groups/"+groupID+"/actions", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(tenancy.HeaderTenantSlug, tenantSlug)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatalf("request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	t.Cleanup(func() { _ = resp.Body.Close() })
 
 	if resp.StatusCode != http.StatusAccepted {
 		t.Fatalf("expected 202, got %d", resp.StatusCode)
 	}
 
-	entries := audit.Entries()
 	var found bool
-	for _, entry := range entries {
-		if entry.Type == "quarantine" {
+	for _, entry := range harness.audit.Entries() {
+		if entry.Type == string(actions.ActionQuarantine) {
 			found = true
 		}
 	}
 	if !found {
-		t.Fatalf("expected quarantine audit entry, got %#v", entries)
+		t.Fatalf("expected quarantine audit entry, got %#v", harness.audit.Entries())
+	}
+
+	updated, err := harness.repo.Get(context.Background(), group.ID)
+	if err != nil {
+		t.Fatalf("reload duplicate group: %v", err)
+	}
+	for _, file := range updated.Files {
+		if !file.Quarantined {
+			t.Fatalf("expected file %s to be quarantined", file.ID)
+		}
 	}
 }

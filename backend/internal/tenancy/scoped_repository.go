@@ -2,6 +2,9 @@ package tenancy
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/google/uuid"
 
 	"github.com/mcmx/duplynx/internal/actions"
 	"github.com/mcmx/duplynx/internal/scans"
@@ -9,17 +12,17 @@ import (
 
 // ScopedRepository enforces tenant boundaries when interacting with shared stores.
 type ScopedRepository struct {
-	scope        Scope
-	scanRepo     *scans.Repository
-	actionsStore *actions.Store
+	scope       Scope
+	scanRepo    *scans.Repository
+	actionsRepo *actions.Repository
 }
 
 // NewScopedRepository constructs a scoped repository facade for the given tenant.
-func NewScopedRepository(scope Scope, scanRepo *scans.Repository, actionsStore *actions.Store) *ScopedRepository {
+func NewScopedRepository(scope Scope, scanRepo *scans.Repository, actionsRepo *actions.Repository) *ScopedRepository {
 	return &ScopedRepository{
-		scope:        scope,
-		scanRepo:     scanRepo,
-		actionsStore: actionsStore,
+		scope:       scope,
+		scanRepo:    scanRepo,
+		actionsRepo: actionsRepo,
 	}
 }
 
@@ -48,11 +51,19 @@ func (s *ScopedRepository) GetScan(ctx context.Context, scanID string) (scans.Sc
 
 // DuplicateGroups returns duplicate groups for the scan filtered by tenant scope.
 func (s *ScopedRepository) DuplicateGroups(scanID string) []actions.DuplicateGroup {
-	if s.actionsStore == nil {
+	if s.actionsRepo == nil {
 		return nil
 	}
 
-	groups := s.actionsStore.ListByScan(scanID)
+	id, err := uuid.Parse(scanID)
+	if err != nil {
+		return nil
+	}
+
+	groups, err := s.actionsRepo.ListByScan(context.Background(), id)
+	if err != nil {
+		return nil
+	}
 	filtered := make([]actions.DuplicateGroup, 0, len(groups))
 	for _, group := range groups {
 		if group.TenantSlug == s.scope.TenantSlug {
@@ -64,15 +75,20 @@ func (s *ScopedRepository) DuplicateGroups(scanID string) []actions.DuplicateGro
 
 // GetDuplicateGroup fetches a duplicate group when it belongs to the scoped tenant.
 func (s *ScopedRepository) GetDuplicateGroup(groupID string) (*actions.DuplicateGroup, error) {
-	if s.actionsStore == nil {
+	if s.actionsRepo == nil {
 		return nil, actions.ErrGroupNotFound
 	}
-	group, ok := s.actionsStore.Get(groupID)
-	if !ok {
-		return nil, actions.ErrGroupNotFound
+	id, err := uuid.Parse(groupID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", actions.ErrInvalidGroupID, err)
+	}
+
+	group, err := s.actionsRepo.Get(context.Background(), id)
+	if err != nil {
+		return nil, err
 	}
 	if group.TenantSlug != s.scope.TenantSlug {
 		return nil, actions.ErrGroupNotFound
 	}
-	return group, nil
+	return &group, nil
 }

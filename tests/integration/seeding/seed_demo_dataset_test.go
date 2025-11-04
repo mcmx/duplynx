@@ -14,15 +14,24 @@ import (
 )
 
 func TestSeedCommandPopulatesCanonicalDataset(t *testing.T) {
-	repoRoot, err := filepath.Abs(".")
+	repoRoot, err := filepath.Abs("../../..")
 	if err != nil {
 		t.Fatalf("failed to determine repo root: %v", err)
 	}
 
 	backendDir := filepath.Join(repoRoot, "backend")
-	assetsDir := filepath.Join(backendDir, "web", "dist")
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "duplynx.db")
+	assetsDir := filepath.Join(tempDir, "assets")
+
+	if err := os.MkdirAll(assetsDir, 0o755); err != nil {
+		t.Fatalf("failed to create asset dir: %v", err)
+	}
+	for _, name := range []string{"tailwind.css", "app.css"} {
+		if err := os.WriteFile(filepath.Join(assetsDir, name), []byte("/* test asset */"), 0o644); err != nil {
+			t.Fatalf("failed to write %s: %v", name, err)
+		}
+	}
 
 	runSeedCommand(t, backendDir, assetsDir, dbPath)
 	runSeedCommand(t, backendDir, assetsDir, dbPath)

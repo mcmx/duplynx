@@ -31,7 +31,7 @@ func SeedDemoDataset(ctx context.Context, client *ent.Client, dataset DemoDatase
 		return SeedReport{}, errors.New("ent client is nil")
 	}
 
-	if dataset.Tenants == nil || len(dataset.Tenants) == 0 {
+	if len(dataset.Tenants) == 0 {
 		dataset = CanonicalDemoDataset()
 	} else {
 		dataset = dataset.Clone()

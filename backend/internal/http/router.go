@@ -18,8 +18,8 @@ import (
 type Dependencies struct {
 	TenancyRepo       *tenancy.Repository
 	ScanRepo          *scans.Repository
-	ActionsStore      *actions.Store
-	ActionsDispatcher actions.Dispatcher
+	ActionsRepo       *actions.Repository
+	ActionsDispatcher *actions.Dispatcher
 	StaticFS          http.FileSystem
 }
 
@@ -69,7 +69,7 @@ func NewRouter(deps Dependencies) *chi.Mux {
 			r.With(scopeMiddleware).Get("/scans/{scanID}", scanBoardHandler.ServeHTTP)
 		}
 
-		if deps.ActionsStore != nil {
+		if deps.ActionsDispatcher != nil && deps.ActionsRepo != nil {
 			keeperHandler := handlers.KeeperHandler{Dispatcher: deps.ActionsDispatcher}
 			actionHandler := handlers.ActionHandler{Dispatcher: deps.ActionsDispatcher}
 
