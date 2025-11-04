@@ -143,12 +143,12 @@ description: "Task list for DupLynx Server Runtime feature"
 
 **Purpose**: Remove deprecated artifacts and ensure quality across the updated runtime.
 
-- [ ] T031 Remove legacy in-memory duplicate group store now superseded by Ent in `backend/internal/actions/store.go`
-- [ ] T032 Update remaining unit tests to use seeded database helpers in `tests/unit/actions_dispatcher_test.go`
-- [ ] T033 Run `go fmt` and `golangci-lint` over new packages in `backend/internal/...`
-- [ ] T034 Verify quickstart instructions by executing documented flow, recording timing output, and capturing notes in `docs/duplynx-demo.md`
-- [ ] T035 Document onboarding support baseline and tracking plan for SC-004 in `docs/duplynx-demo.md`
-- [ ] T036 Create automated quickstart timing script in `scripts/measure_quickstart.sh` and document usage in `docs/duplynx-demo.md`
+- [X] T031 Remove legacy in-memory duplicate group store now superseded by Ent in `backend/internal/actions/store.go`
+- [X] T032 Update remaining unit tests to use seeded database helpers in `tests/unit/actions_dispatcher_test.go`
+- [X] T033 Run `go fmt` and `golangci-lint` over new packages in `backend/internal/...`
+- [X] T034 Verify quickstart instructions by executing documented flow, recording timing output, and capturing notes in `docs/duplynx-demo.md`
+- [X] T035 Document onboarding support baseline and tracking plan for SC-004 in `docs/duplynx-demo.md`
+- [X] T036 Create automated quickstart timing script in `scripts/measure_quickstart.sh` and document usage in `docs/duplynx-demo.md`
 
 ---
 
