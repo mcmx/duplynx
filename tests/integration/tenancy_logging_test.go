@@ -5,16 +5,20 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mcmx/duplynx/internal/http"
+	apphttp "github.com/mcmx/duplynx/internal/http"
 	"github.com/mcmx/duplynx/internal/tenancy"
+	"github.com/mcmx/duplynx/tests/testutil"
 )
 
 func TestTenantSelectionLogging(t *testing.T) {
+	seed := testutil.NewSeededClient(t)
 	audit := &tenancy.AuditLogger{}
-	repo := tenancy.NewRepository(tenancy.SampleTenants(), audit)
-	r := http.NewRouter(http.Dependencies{TenancyRepo: repo})
+	repo := tenancy.NewRepositoryFromClient(seed.Client, audit)
+	r := apphttp.NewRouter(apphttp.Dependencies{TenancyRepo: repo})
 
-	req := httptest.NewRequest(http.MethodGet, "/tenants/sample-tenant-a/machines", nil)
+	tenantSlug := seed.Dataset.Tenants[0].Slug
+	req := httptest.NewRequest(http.MethodGet, "/tenants/"+tenantSlug+"/machines", nil)
+	req.Header.Set(tenancy.HeaderTenantSlug, tenantSlug)
 	rec := httptest.NewRecorder()
 
 	r.ServeHTTP(rec, req)

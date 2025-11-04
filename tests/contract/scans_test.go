@@ -10,25 +10,37 @@ import (
 	apphttp "github.com/mcmx/duplynx/internal/http"
 	"github.com/mcmx/duplynx/internal/scans"
 	"github.com/mcmx/duplynx/internal/tenancy"
+	"github.com/mcmx/duplynx/tests/testutil"
 )
 
-func setupBoardRouter() *chi.Mux {
+type boardHarness struct {
+	router *chi.Mux
+	seed   testutil.SeededClient
+}
+
+func setupBoardRouter(t *testing.T) boardHarness {
+	seed := testutil.NewSeededClient(t)
 	audit := &tenancy.AuditLogger{}
-	tenancyRepo := tenancy.NewRepository(tenancy.SampleTenants(), audit)
-	scanRepo := scans.NewRepository(scans.SampleScans())
-	svc := scans.Service{ScansRepo: scanRepo}
-	return apphttp.NewRouter(apphttp.Dependencies{
+	tenancyRepo := tenancy.NewRepositoryFromClient(seed.Client, audit)
+	scanRepo := scans.NewRepositoryFromClient(seed.Client)
+
+	router := apphttp.NewRouter(apphttp.Dependencies{
 		TenancyRepo: tenancyRepo,
-		ScanService: svc,
+		ScanRepo:    scanRepo,
 	})
+
+	return boardHarness{router: router, seed: seed}
 }
 
 func TestScanListContract(t *testing.T) {
-	r := setupBoardRouter()
-	req := httptest.NewRequest(http.MethodGet, "/tenants/sample-tenant-a/scans", nil)
+	harness := setupBoardRouter(t)
+	tenantSlug := harness.seed.Dataset.Tenants[0].Slug
+
+	req := httptest.NewRequest(http.MethodGet, "/tenants/"+tenantSlug+"/scans", nil)
+	req.Header.Set(tenancy.HeaderTenantSlug, tenantSlug)
 	rec := httptest.NewRecorder()
 
-	r.ServeHTTP(rec, req)
+	harness.router.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
@@ -36,11 +48,15 @@ func TestScanListContract(t *testing.T) {
 }
 
 func TestScanBoardContract(t *testing.T) {
-	r := setupBoardRouter()
-	req := httptest.NewRequest(http.MethodGet, "/scans/baseline-sweep-2025-10-01", nil)
+	harness := setupBoardRouter(t)
+	scanID := harness.seed.Dataset.Scans[0].ID.String()
+	tenantSlug := testutil.TenantSlugFor(t, harness.seed.Dataset, harness.seed.Dataset.Scans[0].TenantID)
+
+	req := httptest.NewRequest(http.MethodGet, "/scans/"+scanID, nil)
+	req.Header.Set(tenancy.HeaderTenantSlug, tenantSlug)
 	rec := httptest.NewRecorder()
 
-	r.ServeHTTP(rec, req)
+	harness.router.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)

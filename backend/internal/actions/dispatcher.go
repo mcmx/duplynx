@@ -1,39 +1,77 @@
 package actions
 
 import (
+	"context"
 	"errors"
+	"fmt"
+
+	"github.com/google/uuid"
 )
 
 var (
-	ErrGroupNotFound   = errors.New("duplicate group not found")
-	ErrKeeperMachineID = errors.New("keeper machine id required")
+	ErrGroupNotFound    = errors.New("duplicate group not found")
+	ErrKeeperMachineID  = errors.New("keeper machine id required")
+	ErrInvalidGroupID   = errors.New("invalid duplicate group id")
+	ErrInvalidMachineID = errors.New("invalid machine id")
 )
 
 // Dispatcher coordinates keeper assignments and duplicate actions.
 type Dispatcher struct {
-	Store *Store
+	Repo  *Repository
 	Audit *AuditLogger
 }
 
-func (d Dispatcher) AssignKeeper(groupID, tenantSlug, machineID string) error {
+// NewDispatcher constructs a dispatcher backed by the supplied repository and audit logger.
+func NewDispatcher(repo *Repository, audit *AuditLogger) *Dispatcher {
+	return &Dispatcher{Repo: repo, Audit: audit}
+}
+
+func (d *Dispatcher) repository() (*Repository, error) {
+	if d == nil || d.Repo == nil {
+		return nil, errors.New("actions repository not configured")
+	}
+	return d.Repo, nil
+}
+
+// AssignKeeper records a keeper machine selection for the duplicate group.
+func (d *Dispatcher) AssignKeeper(ctx context.Context, groupID, tenantSlug, machineID string) error {
 	if machineID == "" {
 		return ErrKeeperMachineID
 	}
-	group, ok := d.Store.Get(groupID)
-	if !ok {
-		return ErrGroupNotFound
+	repo, err := d.repository()
+	if err != nil {
+		return err
+	}
+
+	gid, err := uuid.Parse(groupID)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrInvalidGroupID, err)
+	}
+	mid, err := uuid.Parse(machineID)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrInvalidMachineID, err)
+	}
+
+	group, err := repo.Get(ctx, gid)
+	if err != nil {
+		return err
 	}
 	if group.TenantSlug != tenantSlug {
 		return ErrGroupNotFound
 	}
-	group.KeeperMachineID = machineID
-	d.Store.Update(group)
-	d.Audit.Log(AuditEntry{
-		Type:            "assign_keeper",
-		GroupID:         groupID,
-		TenantSlug:      tenantSlug,
-		KeeperMachineID: machineID,
-	})
+
+	if err := repo.UpdateKeeper(ctx, gid, mid); err != nil {
+		return err
+	}
+
+	if d.Audit != nil {
+		d.Audit.Log(AuditEntry{
+			Type:            "assign_keeper",
+			GroupID:         groupID,
+			TenantSlug:      tenantSlug,
+			KeeperMachineID: machineID,
+		})
+	}
 	return nil
 }
 
@@ -46,28 +84,41 @@ const (
 	ActionQuarantine ActionType = "quarantine"
 )
 
-func (d Dispatcher) PerformAction(groupID, tenantSlug, actor string, action ActionType, payload map[string]any) error {
-	group, ok := d.Store.Get(groupID)
-	if !ok {
-		return ErrGroupNotFound
+// PerformAction executes the duplicate action within the tenant scope.
+func (d *Dispatcher) PerformAction(ctx context.Context, groupID, tenantSlug, actor string, action ActionType, payload map[string]any) error {
+	repo, err := d.repository()
+	if err != nil {
+		return err
+	}
+
+	gid, err := uuid.Parse(groupID)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrInvalidGroupID, err)
+	}
+
+	group, err := repo.Get(ctx, gid)
+	if err != nil {
+		return err
 	}
 	if group.TenantSlug != tenantSlug {
 		return ErrGroupNotFound
 	}
-	// Phase 1 implementation stubs remote execution, only logs audit entry.
-	d.Audit.Log(AuditEntry{
-		Type:       string(action),
-		GroupID:    groupID,
-		TenantSlug: tenantSlug,
-		Actor:      actor,
-		Payload:    payload,
-		Stubbed:    true,
-	})
+
 	if action == ActionQuarantine {
-		for i := range group.Files {
-			group.Files[i].Quarantined = true
+		if err := repo.QuarantineFiles(ctx, gid); err != nil {
+			return err
 		}
-		d.Store.Update(group)
+	}
+
+	if d.Audit != nil {
+		d.Audit.Log(AuditEntry{
+			Type:       string(action),
+			GroupID:    groupID,
+			TenantSlug: tenantSlug,
+			Actor:      actor,
+			Payload:    payload,
+			Stubbed:    true,
+		})
 	}
 	return nil
 }

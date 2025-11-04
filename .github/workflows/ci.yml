@@ -26,3 +26,5 @@ jobs:
         run: make tidy
       - name: Run full CI suite (8 minute budget)
         run: make ci
+      - name: Run smoke demo verification
+        run: make smoke-demo

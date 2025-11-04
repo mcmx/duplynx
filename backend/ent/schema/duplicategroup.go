@@ -21,8 +21,8 @@ func (DuplicateGroup) Mixin() []ent.Mixin {
 func (DuplicateGroup) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID { return uuid.New() }),
-		field.UUID("tenant_id", uuid.UUID{}).Immutable(),
-		field.UUID("scan_id", uuid.UUID{}).Immutable(),
+		field.UUID("tenant_id", uuid.UUID{}),
+		field.UUID("scan_id", uuid.UUID{}),
 		field.UUID("keeper_machine_id", uuid.UUID{}).Optional(),
 		field.String("hash"),
 		field.Enum("status").Values("review", "action_needed", "resolved", "archived").Default("review"),

@@ -21,7 +21,7 @@ func (Scan) Mixin() []ent.Mixin {
 func (Scan) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID { return uuid.New() }),
-		field.UUID("tenant_id", uuid.UUID{}).Immutable(),
+		field.UUID("tenant_id", uuid.UUID{}),
 		field.UUID("initiated_machine_id", uuid.UUID{}).Optional(),
 		field.String("name"),
 		field.String("description").Optional(),

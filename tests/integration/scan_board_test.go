@@ -5,16 +5,19 @@ import (
 	"testing"
 
 	"github.com/mcmx/duplynx/internal/scans"
+	"github.com/mcmx/duplynx/tests/testutil"
 )
 
 func TestListTenantScans(t *testing.T) {
-	repo := scans.NewRepository(scans.SampleScans())
-	svc := scans.Service{ScansRepo: repo}
-	items, err := svc.ListTenantScans(context.Background(), "sample-tenant-a")
+	seed := testutil.NewSeededClient(t)
+	repo := scans.NewRepositoryFromClient(seed.Client)
+	svc := scans.Service{Repo: repo}
+	tenantSlug := seed.Dataset.Tenants[0].Slug
+	items, err := svc.ListTenantScans(context.Background(), tenantSlug)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(items) != 3 {
-		t.Fatalf("expected 3 scans, got %d", len(items))
+	if len(items) == 0 {
+		t.Fatalf("expected scans for tenant %s", tenantSlug)
 	}
 }

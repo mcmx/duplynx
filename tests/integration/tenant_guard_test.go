@@ -1,60 +1,77 @@
 package integration_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
-	"github.com/mcmx/duplynx/internal/actions"
+	"github.com/google/uuid"
+
+	"github.com/mcmx/duplynx/ent/enttest"
+	"github.com/mcmx/duplynx/internal/data"
 	apphttp "github.com/mcmx/duplynx/internal/http"
 	"github.com/mcmx/duplynx/internal/scans"
 	"github.com/mcmx/duplynx/internal/tenancy"
 )
 
 func TestTenantGuardBlocksCrossTenantAccess(t *testing.T) {
-	tenants := tenancy.SampleTenants()
-	tenants = append(tenants, tenancy.Tenant{
-		Slug: "sample-tenant-b",
-		Name: "Sample Tenant B",
-		Machines: []tenancy.Machine{
-			{ID: "b-laptop", TenantSlug: "sample-tenant-b", Name: "B-Laptop", Category: "personal_laptop", Hostname: "b.local"},
-		},
-	})
-	repo := tenancy.NewRepository(tenants, nil)
+	ctx := context.Background()
 
-	scanSummaries := append(scans.SampleScans(), scans.ScanSummary{
-		ID:                  "tenant-b-scan",
-		TenantSlug:          "sample-tenant-b",
-		Name:                "Tenant B Baseline",
-		InitiatedMachineID:  "b-laptop",
-		StartedAt:           time.Now(),
-		CompletedAt:         time.Now(),
-		DuplicateGroupCount: 0,
-		StatusCounts:        map[string]int{},
+	client := enttest.Open(t, "sqlite3", "file:tenant-guard?mode=memory&cache=shared&_fk=1")
+	t.Cleanup(func() {
+		_ = client.Close()
 	})
-	scanRepo := scans.NewRepository(scanSummaries)
 
-	store := actions.NewStore(actions.SampleDuplicateGroups())
-	dispatcher := actions.Dispatcher{Store: store, Audit: &actions.AuditLogger{}}
+	dataset := data.CanonicalDemoDataset()
+	if _, err := data.SeedDemoDataset(ctx, client, dataset); err != nil {
+		t.Fatalf("failed to seed dataset: %v", err)
+	}
+
+	repo := tenancy.NewRepositoryFromClient(client, &tenancy.AuditLogger{})
+	scanRepo := scans.NewRepositoryFromClient(client)
 
 	router := apphttp.NewRouter(apphttp.Dependencies{
-		TenancyRepo:       repo,
-		ScanRepo:          scanRepo,
-		ActionsStore:      store,
-		ActionsDispatcher: dispatcher,
+		TenancyRepo: repo,
+		ScanRepo:    scanRepo,
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/tenants/sample-tenant-b/scans", nil)
-	req.Header.Set("X-Duplynx-Tenant", "sample-tenant-a")
+	var tenantA, tenantB string
+	var tenantBID uuid.UUID
+	for _, tenant := range dataset.Tenants {
+		if tenant.Slug == "orion-analytics" {
+			tenantA = tenant.Slug
+		}
+		if tenant.Slug == "selene-research" {
+			tenantB = tenant.Slug
+			tenantBID = tenant.ID
+		}
+	}
+	if tenantA == "" || tenantB == "" || tenantBID == uuid.Nil {
+		t.Fatalf("canonical dataset missing expected tenants")
+	}
+
+	var tenantBScanID string
+	for _, scan := range dataset.Scans {
+		if scan.TenantID == tenantBID {
+			tenantBScanID = scan.ID.String()
+			break
+		}
+	}
+	if tenantBScanID == "" {
+		t.Fatalf("canonical dataset missing scan for tenant %s", tenantB)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/tenants/"+tenantB+"/scans", nil)
+	req.Header.Set("X-Duplynx-Tenant", tenantA)
 	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNotFound {
 		t.Fatalf("expected 404 for cross-tenant scan list access, got %d", rr.Code)
 	}
 
-	req = httptest.NewRequest(http.MethodGet, "/scans/tenant-b-scan", nil)
-	req.Header.Set("X-Duplynx-Tenant", "sample-tenant-a")
+	req = httptest.NewRequest(http.MethodGet, "/scans/"+tenantBScanID, nil)
+	req.Header.Set("X-Duplynx-Tenant", tenantA)
 	rr = httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNotFound {

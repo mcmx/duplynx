@@ -31,10 +31,7 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- `Code Quality Fidelity`: Document lint/static analysis enforcement, code review sign-off, and module documentation checkpoints for this feature.
-- `Testing Standardization`: Specify required test suites (unit, integration, contract) and define the CI gate that blocks merges on failing tests.
-- `Consistent User Experience`: Reference the shared UX patterns/design tokens in use and outline accessibility validation steps for new flows.
-- `Performance Discipline`: Declare the performance budgets or SLAs targeted by this feature and the measurement plan (benchmarks, profiling, monitoring hooks).
+[Gates determined based on constitution file]
 
 ## Project Structure
 

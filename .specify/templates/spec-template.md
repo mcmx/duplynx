@@ -20,8 +20,6 @@
   - Demonstrated to users independently
 -->
 
-**Constitution Alignment**: For every story, capture the UX pattern or design token reused, the automated tests required, and any performance sensitivities that must be respected.
-
 ### User Story 1 - [Brief Title] (Priority: P1)
 
 [Describe this user journey in plain language]
@@ -84,13 +82,6 @@
   Fill them out with the right functional requirements.
 -->
 
-### Quality Guardrails
-
-- **QG-001**: Code MUST meet project lint/static analysis rules and include public API documentation updates.
-- **QG-002**: Automated tests (unit, integration, contract as applicable) MUST cover the new behavior and run in CI as merge blockers.
-- **QG-003**: UX changes MUST reference shared components/tokens and include accessibility acceptance criteria.
-- **QG-004**: Performance budgets or SLAs impacted by this feature MUST be defined along with measurement/monitoring hooks.
-
 ### Functional Requirements
 
 - **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
@@ -118,7 +109,7 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [User journey metric, e.g., "Users complete the primary flow in ≤3 interactions using approved components"]
-- **SC-002**: [Quality metric, e.g., "All new modules pass lint/static analysis with zero warnings"]
-- **SC-003**: [Testing metric, e.g., "Regression suite executes in ≤10 minutes with 100% pass rate"]
-- **SC-004**: [Performance metric, e.g., "Feature maintains p95 latency ≤200ms under 500 concurrent users"]
+- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
+- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
+- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
+- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]

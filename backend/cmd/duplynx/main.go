@@ -1,20 +1,22 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"fmt"
-	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	dbFile := flag.String("db-file", "var/duplynx.db", "path to SQLite database file")
-	addr := flag.String("addr", ":8080", "address for HTTP server to bind")
-	embedStatic := flag.Bool("embed-static", true, "serve embedded static assets")
-	mode := flag.String("mode", "server", "launch mode: server or seed")
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
-	flag.Parse()
+	cmd := newRootCommand()
+	cmd.SetContext(ctx)
 
-	log.Printf("DupLynx starting (mode=%s, addr=%s, db=%s, embedStatic=%t)\n", *mode, *addr, *dbFile, *embedStatic)
-
-	fmt.Println("DupLynx entrypoint is stubbed; implementation coming in later phases.")
+	if err := cmd.ExecuteContext(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "duplynx: %v\n", err)
+		os.Exit(1)
+	}
 }
