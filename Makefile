@@ -18,6 +18,12 @@ tidy:
 .PHONY: smoke-demo
 smoke-demo:
 	@set -eu; \
+	if [ ! -f go.work ]; then \
+		go work init ./backend ./tests; \
+	else \
+		go work use ./backend ./tests; \
+	fi; \
+	go work sync; \
 	start=$$(date +%s); \
 	go test ./tests/smoke -count=1; \
 	end=$$(date +%s); \
