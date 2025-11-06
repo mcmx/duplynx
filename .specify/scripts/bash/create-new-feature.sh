@@ -93,15 +93,21 @@ check_existing_branches() {
     # Also check local branches
     local local_branches=$(git branch 2>/dev/null | grep -E "^[* ]*[0-9]+-${short_name}$" | sed 's/^[* ]*//' | sed 's/-.*//' | sort -n)
     
-    # Check specs directory as well
+    # Check specs directory as well (suffix-specific)
     local spec_dirs=""
     if [ -d "$SPECS_DIR" ]; then
         spec_dirs=$(find "$SPECS_DIR" -maxdepth 1 -type d -name "[0-9]*-${short_name}" 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/-.*//' | sort -n)
     fi
+
+    # Track the global highest spec number so we keep counting even if matching branches were deleted
+    local global_spec_dirs=""
+    if [ -d "$SPECS_DIR" ]; then
+        global_spec_dirs=$(find "$SPECS_DIR" -maxdepth 1 -type d -name "[0-9][0-9][0-9]-*" 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/-.*//' | sort -n)
+    fi
     
     # Combine all sources and get the highest number
     local max_num=0
-    for num in $remote_branches $local_branches $spec_dirs; do
+    for num in $remote_branches $local_branches $spec_dirs $global_spec_dirs; do
         if [ "$num" -gt "$max_num" ]; then
             max_num=$num
         fi
